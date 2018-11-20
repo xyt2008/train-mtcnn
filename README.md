@@ -48,7 +48,7 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 	
 **(7)双击P20_gen_augment_data.bat**
 
-	对于Pnet20正样本进行增强
+	对Pnet20正样本进行增强
 	
 **(8)双击P20_gen_imglist_with_hard.bat**
 
