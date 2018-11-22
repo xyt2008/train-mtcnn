@@ -80,7 +80,27 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 
 	训练Rnet
 	
-## 训练Onet， 未完待续...
+## 训练Onet （暂时不带landmark）
+
+**(15)双击O_gen_data.bat**
+
+	生成训练Onet所需样本
+	
+**(16)双击O_gen_augment_data.bat**
+
+	对Onet正样本增强
+	
+**(17)双击O_gen_hard_example.bat**
+	
+	利用训练得到的Pnet20、Rnet模型，生成用于训练Onet的hard样本，请用文本方式打开，酌情填写参数
+	
+**(18)双击O_gen_imglist_with_hard.bat**
+
+	生成用于训练Onet的list文件
+	
+**(19)双击O_train_with_hard.bat**
+
+	训练Onet
 
 
 
