@@ -19,6 +19,7 @@ def augment_data(size = 20):
         net = "rnet"
     elif size == 48:
         net = "onet"
+    limit_num = 2000000
 
     im_save_dir = "%s/prepare_data/%s"%(config.root,size)
     txt_save_dir = "%s/prepare_data/%s"%(config.root,net)
@@ -32,6 +33,12 @@ def augment_data(size = 20):
 
     with open('%s/pos_%s.txt'%(txt_save_dir, size), 'r') as f:
         pos = f.readlines()
+    if len(pos) > limit_num:
+        pos_keep = npr.choice(len(pos), size=limit_num, replace=False)
+        old_pos = pos
+        pos = []
+        for i in pos_keep:
+            pos.append(old_pos[i])
 
     n_idx = 0
     with open("%s/pos_aug_%s.txt"%(txt_save_dir, size), "w") as f:
