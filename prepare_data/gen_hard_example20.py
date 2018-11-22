@@ -120,7 +120,7 @@ def test_net(root_path, dataset_path, image_set, prefix, epoch,
 
     # load rnet model
     if test_mode in ["rnet", "onet"]:
-        args, auxs = load_param(prefix[1], epoch[0], convert=True, ctx=ctx)
+        args, auxs = load_param(prefix[1], epoch[1], convert=True, ctx=ctx)
         RNet = Detector(R_Net("test"), 24, batch_size[1], ctx, args, auxs)
         detectors[1] = RNet
 
@@ -173,11 +173,11 @@ def parse_args():
     parser.add_argument('--prefix', dest='prefix', help='prefix of model name', nargs="+",
                         default=['%s/model/pnet20'%config.root, '%s/model/rnet'%config.root, '%s/model/onet'%config.root], type=str)
     parser.add_argument('--epoch', dest='epoch', help='epoch number of model to load', nargs="+",
-                        default=[16, 16, 16], type=int)
+                        default=[13, 20, 16], type=int)
     parser.add_argument('--batch_size', dest='batch_size', help='list of batch size used in prediction', nargs="+",
                         default=[2048, 256, 16], type=int)
     parser.add_argument('--thresh', dest='thresh', help='list of thresh for pnet, rnet, onet', nargs="+",
-                        default=[0.6, 0.7, 0.7], type=float)
+                        default=[0.3, 0.3, 0.3], type=float)
     parser.add_argument('--min_face', dest='min_face', help='minimum face size for detection',
                         default=24, type=int)
     parser.add_argument('--stride', dest='stride', help='stride of sliding window',
