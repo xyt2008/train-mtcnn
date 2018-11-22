@@ -36,22 +36,18 @@ def gen_imglists_with_hard_aug(size=20):
         neg_hard_num = config.base_num*300000 #2000000
 		
     if size == 24:
-        pos_num = config.base_num*200000 #5700000
-        pos_aug_num = config.base_num*100000 #0
+        pos_num = config.base_num*200000 #3000000
+        pos_aug_num = config.base_num*100000 #2700000
         part_num = config.base_num*300000 #5700000 
         neg_num = config.base_num*600000 #11700000
         neg_hard_num = config.base_num*300000 #5300000	
-        #pos = pos[0:5700000]
-        #pos_aug = pos_aug[0:2400000]
-        #part = part[0:5700000]
-        #neg = neg[0:11700000]
 		
     if size == 48:
-        pos_num = 3000000
-        pos_aug_num = 2700000
-        part_num = 5700000 
-        neg_num = 11700000
-        neg_hard_num = 5300000
+        pos_num = config.base_num*200000 #3000000
+        pos_aug_num = config.base_num*100000 #2700000
+        part_num = config.base_num*300000 #5700000 
+        neg_num = config.base_num*600000 #11700000
+        neg_hard_num = config.base_num*300000 #5300000
 
     
     with open("%s/prepare_data/%s/train_%s_with_hard.txt"%(config.root,net, size), "w") as f:
