@@ -1,19 +1,21 @@
 import argparse
 import mxnet as mx
+import sys,os
+sys.path.append(os.getcwd())
 from core.imdb import IMDB
 from train import train_net
 from core.symbol import O_Net
 
 def train_O_net(image_set, root_path, dataset_path, prefix, ctx,
                 pretrained, epoch, begin_epoch, end_epoch, batch_size, thread_num, 
-                frequent, lr, resume):
+                frequent, lr,lr_epoch, resume):
     imdb = IMDB("mtcnn", image_set, root_path, dataset_path)
     gt_imdb = imdb.gt_imdb()
     gt_imdb = imdb.append_flipped_images(gt_imdb)
     sym = O_Net()
 
     train_net(sym, prefix, ctx, pretrained, epoch, begin_epoch, end_epoch, gt_imdb, batch_size, thread_num,
-              48, frequent, not resume, lr)
+              48, frequent, not resume, lr, lr_epoch)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train O_net(48-net)',
@@ -41,9 +43,11 @@ def parse_args():
     parser.add_argument('--thread_num', dest='thread_num', help='thread num of training',
                         default=4, type=int)
     parser.add_argument('--frequent', dest='frequent', help='frequency of logging',
-                        default=200, type=int)
+                        default=100, type=int)
     parser.add_argument('--lr', dest='lr', help='learning rate',
                         default=0.01, type=float)
+    parser.add_argument('--lr_epoch', dest='lr_epoch', help='learning rate epoch',
+                        default='8,14', type=str)
     parser.add_argument('--resume', dest='resume', help='continue training', action='store_true')
     args = parser.parse_args()
     return args
@@ -53,6 +57,7 @@ if __name__ == '__main__':
     print 'Called with argument:'
     print args
     ctx = [mx.gpu(int(i)) for i in args.gpu_ids.split(',')]
+    lr_epoch = [int(i) for i in args.lr_epoch.split(',')]
     train_O_net(args.image_set, args.root_path, args.dataset_path, args.prefix,
                 ctx, args.pretrained, args.epoch, args.begin_epoch, 
-                args.end_epoch, args.batch_size, args.thread_num, args.frequent, args.lr, args.resume)
+                args.end_epoch, args.batch_size, args.thread_num, args.frequent, args.lr, lr_epoch, args.resume)
