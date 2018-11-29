@@ -16,13 +16,9 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 
 # 训练建议
 
-**(0)下载[WIDER_train](https://pan.baidu.com/s/1PSR11Xs8lWmtVazCGoYR7Q)解压到data文件夹**
+**(1)下载[WIDER_train](https://pan.baidu.com/s/1PSR11Xs8lWmtVazCGoYR7Q)解压到data文件夹**
 
 	解压之后目录为data/WIDER_train/images
-
-**(1)打开config.py填写config.root**
-	
-	config.base_num控制样本数量，请跑完基本流程之后再酌情更改
 
 **(2)双击gen_anno_and_train_list.bat**
 
@@ -93,9 +89,9 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 	
 ## 带landmark
 
-需要下载[celeba](https://pan.baidu.com/s/1m3u3w_JaZn123keBaccLdw)，并解压到data\img_celeba
+需要下载[celeba](https://pan.baidu.com/s/1m3u3w_JaZn123keBaccLdw)，并解压到data/img_celeba
 
-图片位置在data\img_celeba\xx.jpg
+图片位置在data/img_celeba/xx.jpg
 
 **(17)双击O_gen_landmark.bat**
 
