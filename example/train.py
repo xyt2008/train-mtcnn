@@ -1,18 +1,19 @@
 import logging
 import mxnet as mx
-import core.metric as metric
+import core.metric_cls_bbox as metric_cls_bbox
+import core.metric_cls_bbox_landmark as metric_cls_bbox_landmark
+import core.metric_onlylandmark as metric_onlylandmark
 from mxnet.module.module import Module
 from core.loader import ImageLoader
 from core.imdb import IMDB
-from config import config
 from tools.load_model import load_param
 
 def train_net(sym, prefix, ctx, pretrained, epoch, begin_epoch, end_epoch, imdb, batch_size, thread_num,
-              net=12, frequent=50, initialize=True, base_lr=0.01, lr_epoch = [6,14]):
+              net=12, with_cls = True, with_bbox = True, with_landmark = False, frequent=50, initialize=True, base_lr=0.01, lr_epoch = [6,14]):
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
-
-    train_data = ImageLoader(imdb, net, batch_size, thread_num, shuffle=True, ctx=ctx)
+    flip = True
+    train_data = ImageLoader(imdb, net, with_cls, with_bbox, with_landmark, batch_size, thread_num, flip, shuffle=True, ctx=ctx)
 
     if not initialize:
         args, auxs = load_param(pretrained, epoch, convert=True)
@@ -32,7 +33,7 @@ def train_net(sym, prefix, ctx, pretrained, epoch, begin_epoch, end_epoch, imdb,
             if k in data_shape_dict:
                 continue
 
-            print 'init', k
+            #print 'init', k
 
             args[k] = mx.nd.zeros(arg_shape_dict[k])
             init(k, args[k])
@@ -51,14 +52,17 @@ def train_net(sym, prefix, ctx, pretrained, epoch, begin_epoch, end_epoch, imdb,
 
         for k in sym.list_auxiliary_states():
             auxs[k] = mx.nd.zeros(aux_shape_dict[k])
-            print aux_shape_dict[k]
+            #print aux_shape_dict[k]
             init(k, auxs[k])
 
     lr_factor = 0.1
-    #lr_epoch = config.LR_EPOCH
+    image_num = len(imdb)
+    if flip:
+        image_num = image_num*2
+        
     lr_epoch_diff = [epoch - begin_epoch for epoch in lr_epoch if epoch > begin_epoch]
     lr = base_lr * (lr_factor ** (len(lr_epoch) - len(lr_epoch_diff)))
-    lr_iters = [int(epoch * len(imdb) / batch_size) for epoch in lr_epoch_diff]
+    lr_iters = [int(epoch * image_num / batch_size) for epoch in lr_epoch_diff]
     print 'lr', lr, 'lr_epoch', lr_epoch, 'lr_epoch_diff', lr_epoch_diff
     lr_scheduler = mx.lr_scheduler.MultiFactorScheduler(lr_iters, lr_factor)
 
@@ -68,11 +72,25 @@ def train_net(sym, prefix, ctx, pretrained, epoch, begin_epoch, end_epoch, imdb,
     batch_end_callback = mx.callback.Speedometer(train_data.batch_size, frequent=frequent)
     epoch_end_callback = mx.callback.do_checkpoint(prefix)
     eval_metrics = mx.metric.CompositeEvalMetric()
-    metric1 = metric.Accuracy()
-    metric2 = metric.LogLoss()
-    metric3 = metric.BBOX_MSE()
-    for child_metric in [metric1, metric2, metric3]:
-        eval_metrics.add(child_metric)
+    if with_cls and with_bbox:
+        if with_landmark:
+            eval_metrics.add(metric_cls_bbox_landmark.Accuracy())
+            eval_metrics.add(metric_cls_bbox_landmark.LogLoss())	
+            eval_metrics.add(metric_cls_bbox_landmark.BBOX_MSE())
+            eval_metrics.add(metric_cls_bbox_landmark.BBOX_L1())
+            eval_metrics.add(metric_cls_bbox_landmark.LANDMARK_MSE())
+            eval_metrics.add(metric_cls_bbox_landmark.LANDMARK_L1())
+        else:
+            eval_metrics.add(metric_cls_bbox.Accuracy())
+            eval_metrics.add(metric_cls_bbox.LogLoss())	
+            eval_metrics.add(metric_cls_bbox.BBOX_MSE())
+            eval_metrics.add(metric_cls_bbox.BBOX_L1())
+        
+    else:
+        if with_landmark:
+            eval_metrics.add(metric_onlylandmark.OnlyLANDMARK_MSE())
+            eval_metrics.add(metric_onlylandmark.OnlyLANDMARK_L1())
+
     optimizer_params = {'momentum': 0.9,
                         'wd': 0.00001,
                         'learning_rate': lr,

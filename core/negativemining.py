@@ -13,12 +13,12 @@ class NegativeMiningOperator(mx.operator.CustomOp):
 
     def forward(self, is_train, req, in_data, out_data, aux):
         cls_prob = in_data[0].asnumpy() # batchsize x 2 x 1 x 1
-        bbox_pred = in_data[1].asnumpy() # batchsize x 4
-        label = in_data[2].asnumpy().astype(int) # batchsize x 1
+        bbox_pred = in_data[2].asnumpy() # batchsize x 4
+        label = in_data[1].asnumpy().astype(int) # batchsize x 1
         bbox_target = in_data[3].asnumpy() # batchsize x 4
 
         self.assign(out_data[0], req[0], in_data[0])
-        self.assign(out_data[1], req[1], in_data[1])
+        self.assign(out_data[2], req[2], in_data[2])
 
         # cls
         cls_prob = cls_prob.reshape(-1, 2)
@@ -36,7 +36,7 @@ class NegativeMiningOperator(mx.operator.CustomOp):
             cls_keep[valid_inds[keep]] = 1
         else:
             cls_keep[valid_inds] = 1
-        self.assign(out_data[2], req[2], mx.nd.array(cls_keep))
+        self.assign(out_data[1], req[1], mx.nd.array(cls_keep))
 
         # bbox
         valid_inds = np.where(abs(label) == 1)[0]
@@ -55,7 +55,7 @@ class NegativeMiningOperator(mx.operator.CustomOp):
 
 
     def backward(self, req, out_grad, in_data, out_data, in_grad, aux):
-        cls_keep = out_data[2].asnumpy().reshape(-1, 1)
+        cls_keep = out_data[1].asnumpy().reshape(-1, 1)
         bbox_keep = out_data[3].asnumpy().reshape(-1, 1)
 
         cls_grad = np.repeat(cls_keep, 2, axis=1)
@@ -75,14 +75,14 @@ class NegativeMiningProp(mx.operator.CustomOpProp):
         super(NegativeMiningProp, self).__init__(need_top_grad=False)
 
     def list_arguments(self):
-        return ['cls_prob', 'bbox_pred', 'label', 'bbox_target']
+        return ['cls_prob', 'label', 'bbox_pred', 'bbox_target']
 
     def list_outputs(self):
-        return ['cls_out', 'bbox_out', 'cls_keep', 'bbox_keep']
+        return ['cls_out', 'cls_keep', 'bbox_out', 'bbox_keep']
 
     def infer_shape(self, in_shape):
         keep_shape = (in_shape[0][0], )
-        return in_shape, [in_shape[0], in_shape[1], keep_shape, keep_shape]
+        return in_shape, [in_shape[0], keep_shape, in_shape[2], keep_shape]
 
     def create_operator(self, ctx, shapes, dtypes):
         return NegativeMiningOperator()

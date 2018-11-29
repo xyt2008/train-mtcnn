@@ -58,13 +58,21 @@ class TestLoader(mx.io.DataIter):
     def get_batch(self):
         cur_from = self.cur
         cur_to = min(cur_from + self.batch_size, self.size)
-        imdb = [self.imdb[self.index[i]] for i in range(cur_from, cur_to)]
+		imdb = []
+        for i in range(cur_from,cur_to):
+            idx = self.index[i]
+            imdb_ = dict()
+            annotation = self.imdb[idx].strip().split(' ')
+            imdb_['image'] = annotation[0]+'.jpg'
+            
+            imdb.append(imdb_)
+			
         data, label = minibatch.get_testbatch(imdb)
         self.data = [mx.nd.array(data[name]) for name in self.data_names]
         self.label = [mx.nd.array(label[name]) for name in self.label_names]
 
 class ImageLoader(mx.io.DataIter):
-    def __init__(self, imdb, im_size, batch_size, thread_num, shuffle=False, ctx=None, work_load_list=None):
+    def __init__(self, imdb, im_size, with_cls, with_bbox, with_landmark, batch_size, thread_num, flip=True, shuffle=False, ctx=None, work_load_list=None):
 
         super(ImageLoader, self).__init__()
 
@@ -72,6 +80,9 @@ class ImageLoader(mx.io.DataIter):
         self.batch_size = batch_size
         self.thread_num = thread_num
         self.im_size = im_size
+        self.with_cls = with_cls
+        self.with_bbox = with_bbox
+        self.with_landmark = with_landmark
         self.shuffle = shuffle
         self.ctx = ctx
         if self.ctx is None:
@@ -79,15 +90,36 @@ class ImageLoader(mx.io.DataIter):
         self.work_load_list = work_load_list
 
         self.cur = 0
-        self.size = len(imdb)
+        self.image_num = len(imdb)
+        if flip:
+            self.size = self.image_num*2
+        else:
+            self.size = self.image_num
         self.index = np.arange(self.size)
         self.num_classes = 2
 
         self.batch = None
         self.data = None
         self.label = None
-
-        self.label_names= ['label', 'bbox_target']
+		
+        if self.with_landmark:
+            if self.with_cls:
+                if self.with_bbox:
+                    self.label_names = ['type_label', 'label', 'bbox_target', 'landmark_target']
+                    self.with_type = True
+                else:
+                    self.label_names = ['type_label', 'label', 'landmark_target']
+                    self.with_type = True
+            else: 
+                if self.with_bbox:
+                    self.label_names = ['type_label', 'bbox_target', 'landmark_target']
+                    self.with_type = True
+                else:
+                    self.label_names = ['landmark_target']
+                    self.with_type = False
+        else:
+            self.label_names= ['label', 'bbox_target']
+            self.with_type = False
         self.reset()
         self.get_batch()
 
@@ -132,7 +164,68 @@ class ImageLoader(mx.io.DataIter):
     def get_batch(self):
         cur_from = self.cur
         cur_to = min(cur_from + self.batch_size, self.size)
-        imdb = [self.imdb[self.index[i]] for i in range(cur_from, cur_to)]
-        data, label = minibatch.get_minibatch(imdb, self.num_classes, self.im_size, self.thread_num)
+        #print cur_from,cur_to,self.index[cur_from:cur_to]
+        imdb = []
+        for i in range(cur_from,cur_to):
+            idx = self.index[i]
+            imdb_ = dict()
+            is_flip = False
+            if idx >= self.image_num:
+                imdb_['flipped'] = True
+                is_flip = True
+                idx = idx - self.image_num
+            else:
+                imdb_['flipped'] = False
+				
+            annotation = self.imdb[idx].strip().split(' ')
+            imdb_['image'] = annotation[0]+'.jpg'
+            #print(imdb_['image'])
+            label = int(annotation[1])
+            if self.with_type:
+                imdb_['type_label'] = int(label)
+               
+            if label == 1: #pos
+                if self.with_cls:
+                    imdb_['label'] = 1
+                if self.with_bbox:
+                    bbox_target = np.array(annotation[2:],dtype=np.float32)
+                    if is_flip:
+                        bbox_target[0], bbox_target[2] = -bbox_target[2], -bbox_target[0]
+                    imdb_['bbox_target'] = bbox_target
+                if self.with_landmark:
+                    imdb_['landmark_target'] = np.zeros((10,))
+            elif label == 0:              #neg
+                if self.with_cls:
+                    imdb_['label'] = 0
+                if self.with_bbox:
+                    imdb_['bbox_target'] = np.zeros((4,))
+                if self.with_landmark:
+                    imdb_['landmark_target'] = np.zeros((10,))
+            elif label == -1:
+                if self.with_cls:
+                    imdb_['label'] = -1
+                if self.with_bbox:
+                    bbox_target = np.array(annotation[2:],dtype=np.float32)
+                    if is_flip:
+                        bbox_target[0], bbox_target[2] = -bbox_target[2], -bbox_target[0]
+                    imdb_['bbox_target'] = bbox_target
+                if self.with_landmark:
+                    imdb_['landmark_target'] = np.zeros((10,))
+            elif label == -2:             #landmark
+                if self.with_cls:
+                    imdb_['label'] = -1
+                if self.with_bbox:
+                    imdb_['bbox_target'] = np.zeros((4,))
+                if self.with_landmark:	
+                    landmark_target = np.array(annotation[2:],dtype=np.float32)
+                    if is_flip:
+                        landmark_target[0], landmark_target[2] = 1.0-landmark_target[2], 1.0-landmark_target[0]
+                        landmark_target[4] = 1.0-landmark_target[4]
+                        landmark_target[6], landmark_target[8] = 1.0-landmark_target[8], 1.0-landmark_target[6]
+                    imdb_['landmark_target'] = landmark_target
+
+            imdb.append(imdb_)
+        
+        data, label = minibatch.get_minibatch(imdb, self.num_classes, self.im_size, self.with_type, self.with_cls, self.with_bbox, self.with_landmark, self.thread_num)
         self.data = [mx.nd.array(data['data'])]
         self.label = [mx.nd.array(label[name]) for name in self.label_names]

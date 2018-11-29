@@ -4,27 +4,19 @@ import argparse
 import cv2
 import time
 from core.symbol import P_Net20, R_Net, O_Net
-from core.imdb import IMDB
-from config import config
-from core.loader import TestLoader
-from core.detector import Detector
 from core.fcn_detector import FcnDetector
 from tools.load_model import load_param
 from core.MtcnnDetector20 import MtcnnDetector
 
 
 def test_net(prefix, epoch, batch_size, ctx,
-             thresh=[0.6, 0.6, 0.7], min_face_size=24,
-             stride=4, slide_window=False):
+             thresh=[0.6, 0.6, 0.7], min_face_size=24):
 
     detectors = [None, None, None]
 
     # load pnet model
     args, auxs = load_param(prefix[0], epoch[0], convert=True, ctx=ctx)
-    if slide_window:
-        PNet = Detector(P_Net20("test"), 20, batch_size[0], ctx, args, auxs)
-    else:
-        PNet = FcnDetector(P_Net20("test"), ctx, args, auxs)
+    PNet = FcnDetector(P_Net20("test"), ctx, args, auxs)
     detectors[0] = PNet
 
     # load rnet model
@@ -34,11 +26,11 @@ def test_net(prefix, epoch, batch_size, ctx,
 
     # load onet model
     args, auxs = load_param(prefix[2], epoch[2], convert=True, ctx=ctx)
-    ONet = Detector(O_Net("test"), 48, batch_size[2], ctx, args, auxs)
+    ONet = Detector(O_Net("test",False), 48, batch_size[2], ctx, args, auxs)
     detectors[2] = ONet
 
     mtcnn_detector = MtcnnDetector(detectors=detectors, ctx=ctx, min_face_size=min_face_size,
-                                   stride=stride, threshold=thresh, slide_window=slide_window)
+                                   stride=4, threshold=thresh, slide_window=False)
 
     img = cv2.imread('test01.jpg')
     t1 = time.time()
@@ -66,17 +58,14 @@ def parse_args():
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--prefix', dest='prefix', help='prefix of model name', nargs="+",
                         default=['model/pnet20_hard', 'model/rnet', 'model/onet'], type=str)
-    parser.add_argument('--epoch', dest='epoch', help='epoch number of model to load', nargs="+",
-                        default=[13, 20, 16], type=int)
-    parser.add_argument('--batch_size', dest='batch_size', help='list of batch size used in prediction', nargs="+",
-                        default=[2048, 256, 16], type=int)
-    parser.add_argument('--thresh', dest='thresh', help='list of thresh for pnet, rnet, onet', nargs="+",
-                        default=[0.5, 0.5, 0.7], type=float)
+    parser.add_argument('--epoch', dest='epoch', help='epoch number of model to load',
+                        default='16,16,16', type=str)
+    parser.add_argument('--batch_size', dest='batch_size', help='list of batch size used in prediction', 
+                        default='2048,256,16', type=str)
+    parser.add_argument('--thresh', dest='thresh', help='list of thresh for pnet, rnet, onet', 
+                        default='0.5,0.5,0.7', type=str)
     parser.add_argument('--min_face', dest='min_face', help='minimum face size for detection',
                         default=20, type=int)
-    parser.add_argument('--stride', dest='stride', help='stride of sliding window',
-                        default=4, type=int)
-    parser.add_argument('--sw', dest='slide_window', help='use sliding window in pnet', action='store_true')
     parser.add_argument('--gpu', dest='gpu_id', help='GPU device to train with',
                         default=0, type=int)
     args = parser.parse_args()
@@ -89,6 +78,8 @@ if __name__ == '__main__':
     ctx = mx.gpu(args.gpu_id)
     if args.gpu_id == -1:
         ctx = mx.cpu(0)
-    test_net(args.prefix, args.epoch, args.batch_size,
-             ctx, args.thresh, args.min_face,
-             args.stride, args.slide_window)
+    prefix = args.prefix.split(',')
+    epoch = [int(i) for i in args.epoch.split(',')]
+    batch_size = [int(i) for i in args.batch_size.split(',')]
+    thresh = [float(i) for i in args.thresh.split(',')]
+    test_net(prefix, epoch, batch_size, ctx, thresh, args.min_face)

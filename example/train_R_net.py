@@ -9,13 +9,12 @@ from core.symbol import R_Net
 def train_R_net(image_set, root_path, dataset_path, prefix, ctx,
                 pretrained, epoch, begin_epoch, end_epoch, batch_size, thread_num,
                 frequent, lr, lr_epoch, resume):
-    imdb = IMDB("mtcnn", image_set, root_path, dataset_path)
-    gt_imdb = imdb.gt_imdb()
-    gt_imdb = imdb.append_flipped_images(gt_imdb)
+    imdb = IMDB("mtcnn", image_set, root_path, dataset_path, 'train')
+    gt_imdb = imdb.get_annotations()
     sym = R_Net()
 
     train_net(sym, prefix, ctx, pretrained, epoch, begin_epoch, end_epoch, gt_imdb, batch_size, thread_num,
-              24, frequent, not resume, lr, lr_epoch)
+              24, True, True, False, frequent, not resume, lr, lr_epoch)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train refine net(24-net)',

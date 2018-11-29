@@ -45,64 +45,70 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 **(6)双击P20_gen_hard_example.bat**
 
 	利用训练得到的Pnet20模型，生成用于进一步训练Pnet20的hard样本，请用文本方式打开，酌情填写参数
-	
-**(7)双击P20_gen_augment_data.bat**
-
-	对Pnet20正样本进行增强
-	
-**(8)双击P20_gen_imglist_with_hard.bat**
+		
+**(7)双击P20_gen_imglist_with_hard.bat**
 
 	生成用于进一步训练Pnet20的list文件
 	
-**(9)双击P20_train_with_hard.bat**
+**(8)双击P20_train_with_hard.bat**
 	
 	进一步训练Pnet20
 	
 ## 训练Rnet
 
-**(10)双击R_gen_data.bat**
+**(9)双击R_gen_data.bat**
 
 	生成训练Rnet所需样本
 	
-**(11)双击R_gen_augment_data.bat**
-
-	对Rnet正样本增强
-	
-**(12)双击R_gen_hard_example.bat**
+**(10)双击R_gen_hard_example.bat**
 	
 	利用训练得到的Pnet20模型，生成用于训练Rnet的hard样本，请用文本方式打开，酌情填写参数
 	
-**(13)双击R_gen_imglist_with_hard.bat**
+**(11)双击R_gen_imglist_with_hard.bat**
 
 	生成用于训练Rnet的list文件
 	
-**(14)双击R_train_with_hard.bat**
+**(12)双击R_train_with_hard.bat**
 
 	训练Rnet
 	
-## 训练Onet （暂时不带landmark）
+## 训练Onet
 
-**(15)双击O_gen_data.bat**
+**(13)双击O_gen_data.bat**
 
 	生成训练Onet所需样本
 	
-**(16)双击O_gen_augment_data.bat**
-
-	对Onet正样本增强
-	
-**(17)双击O_gen_hard_example.bat**
+**(14)双击O_gen_hard_example.bat**
 	
 	利用训练得到的Pnet20、Rnet模型，生成用于训练Onet的hard样本，请用文本方式打开，酌情填写参数
 	
-**(18)双击O_gen_imglist_with_hard.bat**
+**(15)双击O_gen_imglist_with_hard.bat**
 
 	生成用于训练Onet的list文件
 	
-**(19)双击O_train_with_hard.bat**
+## 不带landmark
+**(16)双击O_train_with_hard.bat**
 
 	训练Onet
+	
+## 带landmark
 
+需要下载[celeba]https://pan.baidu.com/s/1m3u3w_JaZn123keBaccLdw，并解压到data\img_celeba
 
+图片位置在data\img_celeba\xx.jpg
 
+**(17)双击O_gen_landmark.bat**
+
+	生成训练Onet所需landmark样本
+
+**(18)双击O_gen_imglist_with_hard_landmark.bat**
+
+	生成用于训练Onet的list文件
+
+## 单独训练landmark
+
+**(19)双击L_train.bat**
+
+	训练Lnet
 
  

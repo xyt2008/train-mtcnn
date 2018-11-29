@@ -1,0 +1,2 @@
+TrainMTCNNprocessor generate_landmark C:/mtcnn C:/mtcnn/data/img_celeba C:\mtcnn\prepare_data\celeba_annotations/list_bbox_celeba.txt C:\mtcnn\prepare_data\celeba_annotations/list_landmarks_celeba.txt 48 4 16
+pause 

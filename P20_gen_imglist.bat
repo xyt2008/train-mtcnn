@@ -1,3 +1,3 @@
-python prepare_data\gen_imglist20.py
-copy prepare_data\pnet20\train_20.txt data\mtcnn\imglists
-del data\cache\mtcnn_train_20_gt_roidb.pkl
+python prepare_data\gen_imglist.py --size 20 --base_num 1
+copy prepare_data\20\train_20.txt data\mtcnn\imglists
+pause

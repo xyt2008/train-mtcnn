@@ -4,7 +4,6 @@ import time
 from tools import image_processing
 #from mx.model import FeedForward
 import numpy as np
-from config import config
 from tools.nms import py_nms
 
 class MtcnnDetector(object):
@@ -16,7 +15,7 @@ class MtcnnDetector(object):
     def __init__(self,
                  detectors,
                  min_face_size=24,
-                 stride=2,
+                 stride=4,
                  threshold=[0.6, 0.7, 0.7],
                  scale_factor=0.709,
                  ctx=mx.cpu(),

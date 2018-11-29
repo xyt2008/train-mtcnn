@@ -8,14 +8,13 @@ from core.symbol import O_Net
 
 def train_O_net(image_set, root_path, dataset_path, prefix, ctx,
                 pretrained, epoch, begin_epoch, end_epoch, batch_size, thread_num, 
-                frequent, lr,lr_epoch, resume):
-    imdb = IMDB("mtcnn", image_set, root_path, dataset_path)
-    gt_imdb = imdb.gt_imdb()
-    gt_imdb = imdb.append_flipped_images(gt_imdb)
-    sym = O_Net()
+                frequent, lr,lr_epoch, resume, with_landmark):
+    imdb = IMDB("mtcnn", image_set, root_path, dataset_path, 'train')
+    gt_imdb = imdb.get_annotations()
+    sym = O_Net('train',with_landmark)
 
     train_net(sym, prefix, ctx, pretrained, epoch, begin_epoch, end_epoch, gt_imdb, batch_size, thread_num,
-              48, frequent, not resume, lr, lr_epoch)
+              48, True, True, with_landmark, frequent, not resume, lr, lr_epoch)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train O_net(48-net)',
@@ -49,6 +48,7 @@ def parse_args():
     parser.add_argument('--lr_epoch', dest='lr_epoch', help='learning rate epoch',
                         default='8,14', type=str)
     parser.add_argument('--resume', dest='resume', help='continue training', action='store_true')
+    parser.add_argument('--with_landmark', dest='with_landmark', help='with_landmark', action='store_true')
     args = parser.parse_args()
     return args
 
@@ -60,4 +60,5 @@ if __name__ == '__main__':
     lr_epoch = [int(i) for i in args.lr_epoch.split(',')]
     train_O_net(args.image_set, args.root_path, args.dataset_path, args.prefix,
                 ctx, args.pretrained, args.epoch, args.begin_epoch, 
-                args.end_epoch, args.batch_size, args.thread_num, args.frequent, args.lr, lr_epoch, args.resume)
+                args.end_epoch, args.batch_size, args.thread_num, args.frequent, args.lr, lr_epoch, args.resume,
+                args.with_landmark)
