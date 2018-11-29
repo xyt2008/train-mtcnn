@@ -246,7 +246,7 @@ def parse_args():
                         default=24, type=int)
     parser.add_argument('--thread_num', dest='thread_num', help='thread num',
                         default=4, type=int)
-    parser.add_argument('--gpus', dest='gpu_id', help='GPU device to train with',
+    parser.add_argument('--gpus', dest='gpus', help='GPU device to train with',
                         default='0', type=str)
     args = parser.parse_args()
     return args
@@ -255,7 +255,7 @@ if __name__ == '__main__':
     args = parse_args()
     print 'Called with argument:'
     print args
-    ctx = [mx.gpu(int(i)) for i in args.gpu_ids.split(',')]
+    ctx = [mx.gpu(int(i)) for i in args.gpus.split(',')]
     prefix = args.prefix.split(',')
     epoch = [int(i) for i in args.epoch.split(',')]
     batch_size = [int(i) for i in args.batch_size.split(',')]
