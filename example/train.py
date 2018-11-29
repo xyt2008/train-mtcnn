@@ -88,8 +88,8 @@ def train_net(sym, prefix, ctx, pretrained, epoch, begin_epoch, end_epoch, imdb,
         
     else:
         if with_landmark:
-            eval_metrics.add(metric_onlylandmark.OnlyLANDMARK_MSE())
-            eval_metrics.add(metric_onlylandmark.OnlyLANDMARK_L1())
+            eval_metrics.add(metric_onlylandmark.LANDMARK_MSE())
+            eval_metrics.add(metric_onlylandmark.LANDMARK_L1())
 
     optimizer_params = {'momentum': 0.9,
                         'wd': 0.00001,

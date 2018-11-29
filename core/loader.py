@@ -219,9 +219,9 @@ class ImageLoader(mx.io.DataIter):
                 if self.with_landmark:	
                     landmark_target = np.array(annotation[2:],dtype=np.float32)
                     if is_flip:
-                        landmark_target[0], landmark_target[2] = 1.0-landmark_target[2], 1.0-landmark_target[0]
-                        landmark_target[4] = 1.0-landmark_target[4]
-                        landmark_target[6], landmark_target[8] = 1.0-landmark_target[8], 1.0-landmark_target[6]
+                        landmark_target[0], landmark_target[1] = 1.0-landmark_target[1], 1.0-landmark_target[0]
+                        landmark_target[2] = 1.0-landmark_target[2]
+                        landmark_target[3], landmark_target[4] = 1.0-landmark_target[4], 1.0-landmark_target[3]
                     imdb_['landmark_target'] = landmark_target
 
             imdb.append(imdb_)
