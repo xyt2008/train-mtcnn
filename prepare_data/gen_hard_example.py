@@ -5,6 +5,7 @@ import argparse
 import os
 import cv2
 import sys
+import math
 sys.path.append(os.getcwd())
 from config import config
 from core.symbol import P_Net20, R_Net, O_Net
@@ -57,13 +58,13 @@ def creat_mtcnn_detector(prefix, epoch, batch_size, test_mode, thresh, min_face_
     detectors[0] = PNet
 
     # load rnet model
-    if test_mode in ["rnet", "onet"]:
+    if test_mode in ["onet", "hardrnet", "hardonet"]:
         args, auxs = load_param(prefix[1], epoch[1], convert=True, ctx=ctx)
         RNet = Detector(R_Net("test"), 24, batch_size[1], ctx, args, auxs)
         detectors[1] = RNet
 
     # load onet model
-    if test_mode == "onet":
+    if test_mode == "hardonet":
         args, auxs = load_param(prefix[2], epoch[2], convert=True, ctx=ctx)
         ONet = Detector(O_Net("test",False), 48, batch_size[2], ctx, args, auxs)
         detectors[2] = ONet
@@ -76,13 +77,13 @@ def test_net(root_path, dataset_path, image_set, prefix, epoch, batch_size, ctx,
 
     thread_num = max(2,thread_num)
     mtcnn_detectors = list()
-	for i in range(thread_num):
+    for i in range(thread_num):
         mtcnn_detectors.append(creat_mtcnn_detector(prefix,epoch,batch_size,test_mode,thresh,min_face_size,ctx))
     
     imdb = IMDB("wider", image_set, root_path, dataset_path, 'test')
     annotations = imdb.get_annotations()
 
-	image_num = len(annotations)
+    image_num = len(annotations)
     test_batch_size = 10*thread_num
     start_idx = 0
     detections = list()
@@ -92,7 +93,7 @@ def test_net(root_path, dataset_path, image_set, prefix, epoch, batch_size, ctx,
         cur_detections = test_minibatch(cur_annotations,mtcnn_detectors)
         detections.append(cur_detections)
         start_idx = end_idx
-        printf '%d images done'%start_idx
+        print '%d images done'%start_idx
 
     return detections
 
@@ -133,7 +134,7 @@ def save_hard_example(annotation_lines, det_boxes, size):
     print num_of_images
     assert len(det_boxes) == num_of_images, "incorrect detections or ground truths"
 
-	minibatch_size = 10*thread_num
+    minibatch_size = 10*thread_num
     start_idx = 0
     neg_hard_num = 0
     while start_idx < num_of_images:
@@ -217,7 +218,7 @@ def gen_hard_for_one_image(size, idx, img, det_boxes, gt_boxes,  neg_hard_save_d
             neg_hard_names.append(line)
             neg_hard_num += 1
 
-return neg_hard_names
+    return neg_hard_names
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Test mtcnn',
@@ -228,7 +229,7 @@ def parse_args():
                         default='%s/data/mtcnn'%config.root, type=str)
     parser.add_argument('--image_set', dest='image_set', help='image set',
                         default='train', type=str)
-    parser.add_argument('--test_mode', dest='test_mode', help='test net type, can be hardpnet20, hardrnet or hardonet',
+    parser.add_argument('--test_mode', dest='test_mode', help='test net type, can be hardpnet20, rnet, hardrnet or onet, hardonet',
                         default='hardpnet20', type=str)
     parser.add_argument('--prefix', dest='prefix', help='prefix of model name',
                         default='%s/model/pnet20'%config.root+',%s/model/rnet'%config.root+',%s/model/onet'%config.root, type=str)
@@ -258,7 +259,7 @@ if __name__ == '__main__':
     thresh = [float(i) for i in args.thresh.split(',')]
     test_mode = args.test_mode
     detections = test_net(args.root_path, args.dataset_path, args.image_set, prefix, epoch, batch_size, ctx, 
-            test_mode, thresh, args.min_face_size, args.thread_num)
+            test_mode, thresh, args.min_face, args.thread_num)
     
     anno_file = "%s/prepare_data/wider_annotations/anno.txt"%config.root
     with open(anno_file, 'r') as f:
@@ -266,8 +267,8 @@ if __name__ == '__main__':
 		
     if test_mode == "hardpnet20":
         size = 20
-    elif test_mode == "rnet":
+    elif test_mode == "rnet" or test_mode == "hardrnet":
         size = 24
-    elif test_mode == "onet":
+    elif test_mode == "onet" or test_mode == "hardonet":
         size = 48
     save_hard_example(annotation_lines, detections, size)

@@ -119,7 +119,9 @@ def get_minibatch(imdb, num_classes, im_size, with_type, with_cls, with_bbox, wi
 
 def get_testbatch(imdb):
     assert len(imdb) == 1, "Single batch only"
-    im = cv2.imread(imdb[0]['image'])
+    filename = imdb[0]['image']
+    im = cv2.imread(filename)
+    #print filename
     im_array = im
     data = {'data': im_array}
     label = {}
