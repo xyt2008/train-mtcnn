@@ -73,12 +73,12 @@ def creat_mtcnn_detector(prefix, epoch, batch_size, test_mode, thresh, min_face_
     return mtcnn_detector
 	
 def test_net(root_path, dataset_path, image_set, prefix, epoch, batch_size, ctx, 
-            test_mode="hardpnet20",thresh=[0.6, 0.6, 0.7], min_face_size=24, thread_num = 4):
+            test_mode="hardpnet20",thresh=[0.6, 0.6, 0.7], min_face_size=24):
 
-    thread_num = max(2,thread_num)
+    thread_num = len(ctx)
     mtcnn_detectors = list()
     for i in range(thread_num):
-        mtcnn_detectors.append(creat_mtcnn_detector(prefix,epoch,batch_size,test_mode,thresh,min_face_size,ctx))
+        mtcnn_detectors.append(creat_mtcnn_detector(prefix,epoch,batch_size,test_mode,thresh,min_face_size,ctx[i]))
     
     imdb = IMDB("wider", image_set, root_path, dataset_path, 'test')
     annotations = imdb.get_annotations()
@@ -102,21 +102,24 @@ def test_minibatch(imdb, mtcnn_detectors):
     thread_num = len(mtcnn_detectors)
     num_per_thread = math.ceil(float(num_images)/thread_num)
     #print(num_per_thread)
-    threads = []
-    for t in range(thread_num):
-        start_idx = int(num_per_thread*t)
-        end_idx = int(min(num_per_thread*(t+1),num_images))
-        cur_imdb = [imdb[i] for i in range(start_idx, end_idx)]
-        cur_thread = MyThread_test(test_net_thread,(cur_imdb,mtcnn_detectors[t]))
-        threads.append(cur_thread)
-    for t in range(thread_num):
-        threads[t].start()
+    if thread_num == 1:
+        detections = test_net_thread(imdb,mtcnn_detectors[0])
+    else:
+        threads = []
+        for t in range(thread_num):
+            start_idx = int(num_per_thread*t)
+            end_idx = int(min(num_per_thread*(t+1),num_images))
+            cur_imdb = [imdb[i] for i in range(start_idx, end_idx)]
+            cur_thread = MyThread_test(test_net_thread,(cur_imdb,mtcnn_detectors[t]))
+            threads.append(cur_thread)
+        for t in range(thread_num):
+            threads[t].start()
 
-    detections = list()
+        detections = list()
     
-    for t in range(thread_num):
-        cur_detections = threads[t].get_result()
-        detections.append(cur_detections)
+        for t in range(thread_num):
+            cur_detections = threads[t].get_result()
+            detections.append(cur_detections)
     return detections
 
 def save_hard_example(annotation_lines, det_boxes, size):
@@ -243,8 +246,8 @@ def parse_args():
                         default=24, type=int)
     parser.add_argument('--thread_num', dest='thread_num', help='thread num',
                         default=4, type=int)
-    parser.add_argument('--gpu', dest='gpu_id', help='GPU device to train with',
-                        default=0, type=int)
+    parser.add_argument('--gpus', dest='gpu_id', help='GPU device to train with',
+                        default='0', type=str)
     args = parser.parse_args()
     return args
 
@@ -252,14 +255,14 @@ if __name__ == '__main__':
     args = parse_args()
     print 'Called with argument:'
     print args
-    ctx = mx.gpu(args.gpu_id)
+    ctx = [mx.gpu(int(i)) for i in args.gpu_ids.split(',')]
     prefix = args.prefix.split(',')
     epoch = [int(i) for i in args.epoch.split(',')]
     batch_size = [int(i) for i in args.batch_size.split(',')]
     thresh = [float(i) for i in args.thresh.split(',')]
     test_mode = args.test_mode
     detections = test_net(args.root_path, args.dataset_path, args.image_set, prefix, epoch, batch_size, ctx, 
-            test_mode, thresh, args.min_face, args.thread_num)
+            test_mode, thresh, args.min_face)
     
     anno_file = "%s/prepare_data/wider_annotations/anno.txt"%config.root
     with open(anno_file, 'r') as f:
