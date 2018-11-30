@@ -22,7 +22,7 @@ class NegativeMiningOperator_OnlyLandmark(mx.operator.CustomOp):
             keep = np.argsort(L1_error)[::-1][:keep_num]
             landmark_keep[keep] = 1
         else:
-            landmark_keep = 1
+            landmark_keep += 1
         self.assign(out_data[1], req[1], mx.nd.array(landmark_keep))
 
 
