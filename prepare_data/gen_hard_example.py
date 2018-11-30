@@ -129,8 +129,8 @@ def save_hard_example(annotation_lines, det_boxes, size):
     save_path = "%s/prepare_data/%d"%(config.root,size)
     if not os.path.exists(save_path):
         os.mkdir(save_path)
-    if not os.path.exists(neg_save_dir):
-        os.mkdir(neg_save_dir)
+    if not os.path.exists(neg_hard_save_dir):
+        os.mkdir(neg_hard_save_dir)
     f = open(os.path.join(save_path, 'neg_hard.txt'), 'w')
     
     print len(det_boxes)
