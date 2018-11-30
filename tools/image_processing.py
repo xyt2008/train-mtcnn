@@ -1,4 +1,7 @@
 import numpy as np
+from numpy import *
+import cv2
+import math
 
 def transform(im):
     """
@@ -65,3 +68,26 @@ def rotate(image, angle=15, scale=0.9):
     #rotate
     image = cv2.warpAffine(image,M,(w,h))
     return image
+	
+def rotateWithLandmark(image, landmark, angle, scale):
+    w = image.shape[1]
+    h = image.shape[0]
+    cx = landmark[4]
+    cy = landmark[5]
+    #rotate matrix
+    M = cv2.getRotationMatrix2D((cx,cy), angle, scale)
+    
+    
+    in_coords = np.array([[landmark[0], landmark[2], landmark[4], landmark[6], landmark[8]], 
+                          [landmark[1], landmark[3], landmark[5], landmark[7], landmark[9]], 
+                          [1,1,1,1,1]], dtype=np.float32)
+    
+    #rotate
+  
+    image = cv2.warpAffine(image,M,(w,h))
+    out_coords = np.dot(M,in_coords)
+    landmark1 = np.array(landmark,dtype=np.float32).copy()
+    for i in range(5):
+        landmark1[i*2] = out_coords[0][i]
+        landmark1[i*2+1] = out_coords[1][i]
+    return image, landmark1
