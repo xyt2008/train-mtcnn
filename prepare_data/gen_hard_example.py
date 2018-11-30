@@ -91,7 +91,7 @@ def test_net(root_path, dataset_path, image_set, prefix, epoch, batch_size, ctx,
         end_idx = min(start_idx+test_batch_size,image_num)
         cur_annotations = annotations[start_idx:end_idx]
         cur_detections = test_minibatch(cur_annotations,mtcnn_detectors)
-        detections.append(cur_detections)
+        detections = detections+cur_detections
         start_idx = end_idx
         print '%d images done'%start_idx
 
@@ -119,10 +119,10 @@ def test_minibatch(imdb, mtcnn_detectors):
     
         for t in range(thread_num):
             cur_detections = threads[t].get_result()
-            detections.append(cur_detections)
+            detections = detections + cur_detections
     return detections
 
-def save_hard_example(annotation_lines, det_boxes, size):
+def save_hard_example(annotation_lines, det_boxes, size, thread_num):
 
     num_of_images = len(annotation_lines)
     neg_hard_save_dir = "%s/prepare_data/%d/negative_hard"%(config.root,size)
@@ -133,8 +133,9 @@ def save_hard_example(annotation_lines, det_boxes, size):
         os.mkdir(neg_hard_save_dir)
     f = open(os.path.join(save_path, 'neg_hard.txt'), 'w')
     
-    print len(det_boxes)
-    print num_of_images
+    #print len(det_boxes)
+    #print len(det_boxes[0])
+    #print num_of_images
     assert len(det_boxes) == num_of_images, "incorrect detections or ground truths"
 
     minibatch_size = 10*thread_num
@@ -145,7 +146,7 @@ def save_hard_example(annotation_lines, det_boxes, size):
         cur_annotation_lines = annotation_lines[start_idx:end_idx]
         cur_det_boxes = det_boxes[start_idx:end_idx]
         neg_hard_names = gen_hard_minibatch(size, start_idx, cur_annotation_lines, cur_det_boxes, neg_hard_save_dir, thread_num)
-        cur_neg_hard_num = len(cur_neg_hard_names)
+        cur_neg_hard_num = len(neg_hard_names)
         for i in range(cur_neg_hard_num):
             f.write(neg_hard_names[i]+'\n')
         neg_hard_num += cur_neg_hard_num
@@ -187,19 +188,23 @@ def gen_hard_minibatch_thread(size, start_idx, annotation_lines, det_boxes, neg_
         bbox = map(float, cur_annotation_line[1:])
         boxes = np.array(bbox, dtype=np.float32).reshape(-1, 4)
         img = cv2.imread(im_path)
-        cur_neg_hard_names = gen_hard_for_one_image(size, start_idx+i, img, neg_hard_save_dir, det_boxes, bboxes)
+        cur_neg_hard_names = gen_hard_for_one_image(size, start_idx+i, img, det_boxes[i], boxes, neg_hard_save_dir)
         neg_hard_names = neg_hard_names + cur_neg_hard_names
 
     return neg_hard_names
 	
-def gen_hard_for_one_image(size, idx, img, det_boxes, gt_boxes,  neg_hard_save_dir, neg_hard_names):
+def gen_hard_for_one_image(size, idx, img, det_boxes, gt_boxes,  neg_hard_save_dir):
     neg_hard_num = 0
     neg_hard_names = list()
+    
+    det_boxes = np.array(det_boxes,dtype=np.float32)
+    #print det_boxes
     dets = convert_to_square(det_boxes)
     dets[:, 0:4] = np.round(dets[:, 0:4])
 
     for box in dets:
-        x_left, y_top, x_right, y_bottom, _ = box.astype(int)
+        #print box
+        x_left, y_top, x_right, y_bottom,_= box.astype(int)
         width = x_right - x_left + 1
         height = y_bottom - y_top + 1
 
@@ -274,4 +279,4 @@ if __name__ == '__main__':
         size = 24
     elif test_mode == "onet" or test_mode == "hardonet":
         size = 48
-    save_hard_example(annotation_lines, detections, size)
+    save_hard_example(annotation_lines, detections, size, args.thread_num)
