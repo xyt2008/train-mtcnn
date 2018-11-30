@@ -124,7 +124,7 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
                 cv2.imwrite(save_file, resized_im)
                 line = '%s/%d_%d'%(landmark_save_dir,idx,landmark_num) + ' -2 %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f\n'%(
                                          offset_x1, offset_x2, offset_x3, offset_x4, offset_x5, 
-                                         offset_y1, offset_y2, offset_y3, offset_y4, offset_y5))
+                                         offset_y1, offset_y2, offset_y3, offset_y4, offset_y5)
                 landmark_names.append(line)
                 landmark_num += 1
                 brighter_im = resized_im*1.25
@@ -132,7 +132,7 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
                 cv2.imwrite(save_file, brighter_im)
                 line = '%s/%d_%d'%(landmark_save_dir,idx,landmark_num) + ' -2 %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f\n'%(
                                          offset_x1, offset_x2, offset_x3, offset_x4, offset_x5, 
-                                         offset_y1, offset_y2, offset_y3, offset_y4, offset_y5))
+                                         offset_y1, offset_y2, offset_y3, offset_y4, offset_y5)
                 landmark_names.append(line)
                 landmark_num += 1
                 darker_im = resized_im*0.8
@@ -140,7 +140,7 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
                 cv2.imwrite(save_file, darker_im)
                 line = '%s/%d_%d'%(landmark_save_dir,idx,landmark_num) + ' -2 %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f\n'%(
                                          offset_x1, offset_x2, offset_x3, offset_x4, offset_x5, 
-                                         offset_y1, offset_y2, offset_y3, offset_y4, offset_y5))
+                                         offset_y1, offset_y2, offset_y3, offset_y4, offset_y5)
                 landmark_names.append(line)
                 landmark_num += 1
 				
