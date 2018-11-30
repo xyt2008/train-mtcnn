@@ -8,6 +8,7 @@ import numpy.random as npr
 from utils import IoU
 sys.path.append(os.getcwd())
 from config import config
+import tools.image_processing as image_processing
 
 class MyThread(threading.Thread):
     def __init__(self, func, args=()):
@@ -88,14 +89,14 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
         rot_num = len(angles)
         for rr in range(rot_num):
             #print(landmark)
-            rot_img, rot_landmark = rotateWithLandmark(img, landmark, angles[rr],1)
+            rot_img, rot_landmark = image_processing.rotateWithLandmark(img, landmark, angles[rr],1)
             rot_x1, rot_y1 = x1, y1 # as the angle is not large, bbox is almost the same
             for i in range(base_num):
-                cur_size = npr.randint(int(min(w, h) * 0.9), np.ceil(1.11 * max(w, h)))
+                cur_size = npr.randint(int(min(w, h) * 0.8), np.ceil(1.25 * max(w, h)))
 
                 # delta here is the offset of box center
-                delta_x = npr.randint(-w * 0.1, w * 0.1)
-                delta_y = npr.randint(-h * 0.1, h * 0.1)
+                delta_x = npr.randint(-w * 0.15, w * 0.15)
+                delta_y = npr.randint(-h * 0.15, h * 0.15)
 
                 nx1 = int(max(x1 + w / 2 + delta_x - cur_size / 2, 0))
                 ny1 = int(max(y1 + h / 2 + delta_y - cur_size / 2, 0))
