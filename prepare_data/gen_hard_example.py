@@ -198,7 +198,9 @@ def gen_hard_for_one_image(size, idx, img, det_boxes, gt_boxes,  neg_hard_save_d
     neg_hard_names = list()
     
     det_boxes = np.array(det_boxes,dtype=np.float32)
-    #print det_boxes
+    if det_boxes.shape[0] == 0:
+        return neg_hard_names
+
     dets = convert_to_square(det_boxes)
     dets[:, 0:4] = np.round(dets[:, 0:4])
 
