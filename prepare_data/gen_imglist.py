@@ -38,14 +38,14 @@ def gen_imglist(size=20, base_num=1, with_hard=False, with_landmark=False):
 
     if with_hard:
         if with_landmark:
-            out_file = "%s/prepare_data/%d/train_%d_with_hard_landmark.txt"%(config.root, size, size)
+            out_file = "%s/prepare_data/%d/train_%d_with_hard_landmark_%d.txt"%(config.root, size, size, base_num)
         else:
-            out_file = "%s/prepare_data/%d/train_%d_with_hard.txt"%(config.root, size, size)
+            out_file = "%s/prepare_data/%d/train_%d_with_hard_%d.txt"%(config.root, size, size, base_num)
     else:
         if with_landmark:
-            out_file = "%s/prepare_data/%d/train_%d_with_landmark.txt"%(config.root, size, size)
+            out_file = "%s/prepare_data/%d/train_%d_with_landmark_%d.txt"%(config.root, size, size, base_num)
         else:
-            out_file = "%s/prepare_data/%d/train_%d.txt"%(config.root, size, size)
+            out_file = "%s/prepare_data/%d/train_%d_%d.txt"%(config.root, size, size, base_num)
     with open(out_file, "w") as f:
         if len(pos) > pos_num:
             pos_keep = npr.choice(len(pos), size=pos_num, replace=False)
