@@ -134,7 +134,7 @@ def O_Net(mode="train", with_landmark = False):
     label = mx.symbol.Variable(name="label")
 
 	
-    conv1 = mx.symbol.Convolution(data=data, kernel=(3, 3), num_filter=32, name="conv1")
+    conv1 = mx.symbol.Convolution(data=data, kernel=(3, 3),pad=(1,1), num_filter=32, name="conv1")
     bn1 = mx.sym.BatchNorm(data=conv1, name='bn1', fix_gamma=False,momentum=0.9)
     prelu1 = mx.symbol.LeakyReLU(data=bn1, act_type="prelu", name="prelu1")
 	
@@ -287,7 +287,7 @@ def L_Net(mode="train"):
     data = mx.symbol.Variable(name="data")
     landmark_target = mx.symbol.Variable(name="landmark_target")
     
-    conv1 = mx.symbol.Convolution(data=data, kernel=(3, 3), num_filter=32, name="conv1")
+    conv1 = mx.symbol.Convolution(data=data, kernel=(3, 3),pad=(1,1), num_filter=32, name="conv1")
     bn1 = mx.sym.BatchNorm(data=conv1, name='bn1', fix_gamma=False,momentum=0.9)
     prelu1 = mx.symbol.LeakyReLU(data=bn1, act_type="prelu", name="prelu1")
 	
