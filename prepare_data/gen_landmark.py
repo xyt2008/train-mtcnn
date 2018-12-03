@@ -85,7 +85,7 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
         if max(w, h) < 40 or x1 < 0 or y1 < 0:
             continue
 
-        angles = [0,-15,-30,15,30]
+        angles = [0,-15,-30,-45,-60,-75,-90,15,30,45,60,75,90]
         rot_num = len(angles)
         for rr in range(rot_num):
             #print(landmark)
