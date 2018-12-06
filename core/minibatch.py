@@ -48,7 +48,7 @@ def get_minibatch_thread(imdb, num_classes, im_size, with_type, with_cls, with_b
         if imdb[i]['flipped']:
             im = im[:, ::-1, :]
 
-        im_tensor = image_processing.transform(im)
+        im_tensor = image_processing.transform(im,True)
         processed_ims.append(im_tensor)
 
 

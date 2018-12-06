@@ -2,14 +2,27 @@ import numpy as np
 from numpy import *
 import cv2
 import math
+import sys,os
+sys.path.append(os.getcwd())
+from config import config
 
-def transform(im):
+def transform(im, train = False):
     """
     transform into mxnet tensor
     substract pixel size and transform to correct format
     :param im: [height, width, channel] in BGR
     :return: [batch, channel, height, width]
     """
+    if train:
+        scale = np.randint(80,125) * 0.01
+        im = im * scale
+        if config.enable_gray:
+            gray_flag = np.randint(0,2)
+            if gray_flag == 1:
+                gray_im = im[:,:,0]*0.114+im[:,:,1]*0.587+im[:,:,2]*0.299
+                im[:,:,0] = gray_im
+                im[:,:,1] = gray_im
+                im[:,:,2] = gray_im
     im_tensor = im.transpose(2, 0, 1)
     im_tensor = im_tensor[np.newaxis, :]
     im_tensor = (im_tensor - 127.5)*0.0078125

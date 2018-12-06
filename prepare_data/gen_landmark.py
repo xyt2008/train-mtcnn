@@ -85,14 +85,14 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
         if max(w, h) < 40 or x1 < 0 or y1 < 0:
             continue
 
-        angles = [0,-15,-30,-45,-60,-75,-90,15,30,45,60,75,90]
+        angles = [0,-15,-30,-45,15,30,45]
         rot_num = len(angles)
         for rr in range(rot_num):
             #print(landmark)
             rot_img, rot_landmark = image_processing.rotateWithLandmark(img, landmark, angles[rr],1)
             rot_x1, rot_y1 = x1, y1 # as the angle is not large, bbox is almost the same
             for i in range(base_num):
-                cur_size = npr.randint(int(min(w, h) * 0.8), np.ceil(1.25 * max(w, h)))
+                cur_size = npr.randint(int(min(w, h) * 0.9), np.ceil(1.11 * max(w, h)))
 
                 # delta here is the offset of box center
                 delta_x = npr.randint(-w * 0.15, w * 0.15)
@@ -121,28 +121,12 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
                 cropped_im = rot_img[ny1 : ny2, nx1 : nx2, :]
                 resized_im = cv2.resize(cropped_im, (size, size), interpolation=cv2.INTER_LINEAR)
                 save_file = '%s/%d_%d.jpg'%(landmark_save_dir,idx,landmark_num)
-                cv2.imwrite(save_file, resized_im)
-                line = '%s/%d_%d'%(landmark_save_dir,idx,landmark_num) + ' -2 %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f'%(
-                                         offset_x1, offset_x2, offset_x3, offset_x4, offset_x5, 
-                                         offset_y1, offset_y2, offset_y3, offset_y4, offset_y5)
-                landmark_names.append(line)
-                landmark_num += 1
-                brighter_im = resized_im*1.25
-                save_file = '%s/%d_%d.jpg'%(landmark_save_dir,idx,landmark_num)
-                cv2.imwrite(save_file, brighter_im)
-                line = '%s/%d_%d'%(landmark_save_dir,idx,landmark_num) + ' -2 %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f'%(
-                                         offset_x1, offset_x2, offset_x3, offset_x4, offset_x5, 
-                                         offset_y1, offset_y2, offset_y3, offset_y4, offset_y5)
-                landmark_names.append(line)
-                landmark_num += 1
-                darker_im = resized_im*0.8
-                save_file = '%s/%d_%d.jpg'%(landmark_save_dir,idx,landmark_num)
-                cv2.imwrite(save_file, darker_im)
-                line = '%s/%d_%d'%(landmark_save_dir,idx,landmark_num) + ' -2 %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f'%(
-                                         offset_x1, offset_x2, offset_x3, offset_x4, offset_x5, 
-                                         offset_y1, offset_y2, offset_y3, offset_y4, offset_y5)
-                landmark_names.append(line)
-                landmark_num += 1
+                if cv2.imwrite(save_file, resized_im):
+                    line = '%s/%d_%d'%(landmark_save_dir,idx,landmark_num) + ' -2 %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f'%(
+                                             offset_x1, offset_x2, offset_x3, offset_x4, offset_x5, 
+                                             offset_y1, offset_y2, offset_y3, offset_y4, offset_y5)
+                    landmark_names.append(line)
+                    landmark_num += 1
 				
     return landmark_names
 

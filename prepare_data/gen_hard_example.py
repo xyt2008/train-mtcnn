@@ -223,10 +223,10 @@ def gen_hard_for_one_image(size, idx, img, det_boxes, gt_boxes,  neg_hard_save_d
         if np.max(Iou) < 0.1:
             # Iou with all gt_boxes must below 0.1
             save_file = os.path.join(neg_hard_save_dir, '%d_%d.jpg'%(idx,neg_hard_num))
-            cv2.imwrite(save_file, resized_im)
-            line = '%s/%d_%d 0'%(neg_hard_save_dir,idx,neg_hard_num)
-            neg_hard_names.append(line)
-            neg_hard_num += 1
+            if cv2.imwrite(save_file, resized_im):
+                line = '%s/%d_%d 0'%(neg_hard_save_dir,idx,neg_hard_num)
+                neg_hard_names.append(line)
+                neg_hard_num += 1
 
     return neg_hard_names
 

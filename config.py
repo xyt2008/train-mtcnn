@@ -12,4 +12,4 @@ config.LANDMARK_OHEM = True
 config.LANDMARK_OHEM_RATIO = 0.7
 
 config.EPS = 1e-14
-config.LR_EPOCH = [15, 21, 30]
+config.enable_gray = True
