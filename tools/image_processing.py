@@ -14,10 +14,10 @@ def transform(im, train = False):
     :return: [batch, channel, height, width]
     """
     if train:
-        scale = np.randint(80,125) * 0.01
+        scale = np.random.randint(80,125) * 0.01
         im = im * scale
         if config.enable_gray:
-            gray_flag = np.randint(0,2)
+            gray_flag = np.random.randint(0,2)
             if gray_flag == 1:
                 gray_im = im[:,:,0]*0.114+im[:,:,1]*0.587+im[:,:,2]*0.299
                 im[:,:,0] = gray_im
