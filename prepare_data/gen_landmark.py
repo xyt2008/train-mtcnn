@@ -85,7 +85,8 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
         if max(w, h) < 40 or x1 < 0 or y1 < 0:
             continue
 
-        angles = [0,-15,-30,-45,15,30,45]
+        #angles = [0,-15,-30,-45,15,30,45]
+        angles = [0]
         rot_num = len(angles)
         for rr in range(rot_num):
             #print(landmark)
@@ -105,8 +106,29 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
 
                 if nx2 > width or ny2 > height:
                     continue
-            
-
+                ignore = 0
+                max_x_landmark = -1
+                min_x_landmark = width+1
+                max_y_landmark = -1
+                min_y_landmark = height+1
+                for j in range(5):
+                    if rot_landmark[j*2] < nx1 or rot_landmark[j*2] >= nx1 + cur_size:
+                        ignore = 1
+                    if rot_landmark[j*2+1] < ny1 or rot_landmark[j*2+1] > ny1 + cur_size:
+                        ignore = 1
+                    if max_x_landmark < rot_landmark[j*2]:
+                        max_x_landmark = rot_landmark[j*2]
+                    if min_x_landmark > rot_landmark[j*2]:
+                        min_x_landmark = rot_landmark[j*2]
+                    if max_y_landmark < rot_landmark[j*2+1]:
+                        max_y_landmark = rot_landmark[j*2+1]
+                    if min_y_landmark > rot_landmark[j*2+1]:
+                        min_y_landmark = rot_landmark[j*2+1]
+												
+                if ignore == 1:
+                    continue
+                if (max_x_landmark - min_x_landmark < 0.2*cur_size) and (max_y_landmark-min_y_landmark < 0.2*cur_size):
+                    continue
                 offset_x1 = (rot_landmark[0] - nx1 + 0.5) / float(cur_size)
                 offset_y1 = (rot_landmark[1] - ny1 + 0.5) / float(cur_size)
                 offset_x2 = (rot_landmark[2] - nx1 + 0.5) / float(cur_size)
@@ -117,7 +139,7 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
                 offset_y4 = (rot_landmark[7] - ny1 + 0.5) / float(cur_size)
                 offset_x5 = (rot_landmark[8] - nx1 + 0.5) / float(cur_size)
                 offset_y5 = (rot_landmark[9] - ny1 + 0.5) / float(cur_size)
-
+               
                 cropped_im = rot_img[ny1 : ny2, nx1 : nx2, :]
                 resized_im = cv2.resize(cropped_im, (size, size), interpolation=cv2.INTER_LINEAR)
                 save_file = '%s/%d_%d.jpg'%(landmark_save_dir,idx,landmark_num)
