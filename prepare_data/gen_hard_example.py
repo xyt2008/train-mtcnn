@@ -211,7 +211,7 @@ def gen_hard_for_one_image(size, idx, img, det_boxes, gt_boxes,  neg_hard_save_d
         height = y_bottom - y_top + 1
 
         # ignore box that is too small or beyond image border
-        if width < 20 or x_left < 0 or y_top < 0 or x_right > img.shape[1] - 1 or y_bottom > img.shape[0] - 1:
+        if width < 20 or height < 20 or x_left < 0 or y_top < 0 or x_right > img.shape[1] - 1 or y_bottom > img.shape[0] - 1:
             continue
 
         # compute intersection over union(IoU) between current box and all gt boxes
@@ -244,7 +244,7 @@ def parse_args():
     parser.add_argument('--prefix', dest='prefix', help='prefix of model name',
                         default='%s/model/pnet20'%config.root+',%s/model/rnet'%config.root+',%s/model/onet'%config.root, type=str)
     parser.add_argument('--epoch', dest='epoch', help='epoch number of model to load', 
-                        default='13,20,16', type=str)
+                        default='16,16,16', type=str)
     parser.add_argument('--batch_size', dest='batch_size', help='list of batch size used in prediction', 
                         default='2048,256,16', type=str)
     parser.add_argument('--thresh', dest='thresh', help='list of thresh for pnet, rnet, onet',
