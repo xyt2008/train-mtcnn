@@ -15,19 +15,24 @@ class NegativeMiningOperator_OnlyLandmark(mx.operator.CustomOp):
         # landmark
         self.assign(out_data[0], req[0], in_data[0])
         landmark_keep = np.zeros(landmark_pred.shape[0])
-
+        num = landmark_keep.shape[0]
         if self.landmark_ohem:
             keep_num = int(len(landmark_keep) * self.landmark_ohem_ratio)
             L1_error = np.sum(abs(landmark_pred - landmark_target), axis=1)
             keep = np.argsort(L1_error)[::-1][:keep_num]
+            #print L1_error[keep[0]]
             landmark_keep[keep] = 1
+            for i in range(num):
+                #print L1_error[i]
+                if L1_error[i] < config.landmark_L1_thresh*10:
+                    landmark_keep[i] = 0
         else:
             landmark_keep += 1
         self.assign(out_data[1], req[1], mx.nd.array(landmark_keep))
 
 
     def backward(self, req, out_grad, in_data, out_data, in_grad, aux):
-        landmark_keep = out_data[0].asnumpy().reshape(-1, 1)
+        landmark_keep = out_data[1].asnumpy().reshape(-1, 1)
 
         landmark_grad = np.repeat(landmark_keep, 10, axis=1)
 

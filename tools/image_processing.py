@@ -77,15 +77,7 @@ def brighter(image, percetage=1.5):
             image_copy[xj,xi,1] = np.clip(int(image[xj,xi,1]*percetage),a_max=255,a_min=0)
             image_copy[xj,xi,2] = np.clip(int(image[xj,xi,2]*percetage),a_max=255,a_min=0)
     return image_copy
-def rotate(image, angle=15, scale=0.9):
-    w = image.shape[1]
-    h = image.shape[0]
-    #rotate matrix
-    M = cv2.getRotationMatrix2D((w/2,h/2), angle, scale)
-    #rotate
-    image = cv2.warpAffine(image,M,(w,h))
-    return image
-	
+
 def rotateWithLandmark(image, landmark, angle, scale):
     if angle == 0:
         rot_image = image.copy()
@@ -113,3 +105,27 @@ def rotateWithLandmark(image, landmark, angle, scale):
             landmark1[i*2] = out_coords[0][i]
             landmark1[i*2+1] = out_coords[1][i]
         return rot_image, landmark1
+		
+def rotateLandmark(landmark, angle, scale):
+    if angle == 0:
+        landmark1 = landmark.copy()
+        return landmark1
+    else:
+        cx = landmark[4]
+        cy = landmark[5]
+        #rotate matrix
+        M = cv2.getRotationMatrix2D((cx,cy), angle, scale)
+    
+    
+        in_coords = np.array([[landmark[0], landmark[2], landmark[4], landmark[6], landmark[8]], 
+                              [landmark[1], landmark[3], landmark[5], landmark[7], landmark[9]], 
+                              [1,1,1,1,1]], dtype=np.float32)
+    
+        #rotate
+  
+        out_coords = np.dot(M,in_coords)
+        landmark1 = np.array(landmark,dtype=np.float32).copy()
+        for i in range(5):
+            landmark1[i*2] = out_coords[0][i]
+            landmark1[i*2+1] = out_coords[1][i]
+        return landmark1

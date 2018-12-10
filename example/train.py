@@ -3,10 +3,12 @@ import mxnet as mx
 import core.metric_cls_bbox as metric_cls_bbox
 import core.metric_cls_bbox_landmark as metric_cls_bbox_landmark
 import core.metric_onlylandmark as metric_onlylandmark
+import core.metric_onlylandmark10 as metric_onlylandmark10
 from mxnet.module.module import Module
 from core.loader import ImageLoader
 from core.imdb import IMDB
 from tools.load_model import load_param
+from config import config
 
 def train_net(sym, prefix, ctx, pretrained, epoch, begin_epoch, end_epoch, imdb, batch_size, thread_num,
               net=12, with_cls = True, with_bbox = True, with_landmark = False, frequent=50, initialize=True, base_lr=0.01, lr_epoch = [6,14]):
@@ -88,8 +90,12 @@ def train_net(sym, prefix, ctx, pretrained, epoch, begin_epoch, end_epoch, imdb,
         
     else:
         if with_landmark:
-            eval_metrics.add(metric_onlylandmark.LANDMARK_MSE())
-            eval_metrics.add(metric_onlylandmark.LANDMARK_L1())
+            if config.use_landmark10:
+                eval_metrics.add(metric_onlylandmark10.LANDMARK_MSE())
+                eval_metrics.add(metric_onlylandmark10.LANDMARK_L1())
+            else:
+                eval_metrics.add(metric_onlylandmark.LANDMARK_MSE())
+                eval_metrics.add(metric_onlylandmark.LANDMARK_L1())
 
     optimizer_params = {'momentum': 0.9,
                         'wd': 0.00001,

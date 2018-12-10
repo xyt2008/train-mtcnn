@@ -78,26 +78,41 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
     for bb in range(box_num):
         box = boxes[bb]
         landmark = landmarks[bb]
+        dis1 = (landmark[0] - landmark[8])*(landmark[0] - landmark[8])+(landmark[1] - landmark[9])*(landmark[1] - landmark[9])
+        dis2 = (landmark[2] - landmark[6])*(landmark[2] - landmark[6])+(landmark[3] - landmark[7])*(landmark[3] - landmark[7])
+        dis = max(dis1,dis2)
+        dis = dis**0.5
         x1, y1, w, h = box
+        cx = landmark[4]
+        cy = landmark[5]
+        bbox_size = int(0.25*(abs(x1-cx)+abs(x1+w-cx)+abs(y1-cy)+abs(y1+h-cy)))
+        x1 = int(cx - bbox_size*0.5)
+        y1 = int(cy - bbox_size*0.5)
+        w = bbox_size
+        h = bbox_size
  
         # ignore small faces
         # in case the ground truth boxes of small faces are not accurate
         if max(w, h) < 40 or x1 < 0 or y1 < 0:
             continue
 
-        #angles = [0,-15,-30,-45,15,30,45]
-        angles = [0]
-        rot_num = len(angles)
-        for rr in range(rot_num):
-            #print(landmark)
-            rot_img, rot_landmark = image_processing.rotateWithLandmark(img, landmark, angles[rr],1)
-            rot_x1, rot_y1 = x1, y1 # as the angle is not large, bbox is almost the same
-            for i in range(base_num):
-                cur_size = npr.randint(int(min(w, h) * 0.9), np.ceil(1.11 * max(w, h)))
+        angles = [-50,-40,-30,-20,-10,0,10,20,30,40,50]
+        angle_num = len(angles)
+        for rr in range(angle_num):
+            cur_angle = angles[rr]
+            cur_sample_num = 0
+            try_num = 0
+            while cur_sample_num < base_num:
+                try_num += 1
+                if try_num > base_num*1000:
+                    break
+                rot_landmark = image_processing.rotateLandmark(landmark, cur_angle,1)
+                cur_size = int(npr.randint(8, 20)*0.1*dis)
+                border_size = int(cur_size*0.15)
 
                 # delta here is the offset of box center
-                delta_x = npr.randint(-w * 0.15, w * 0.15)
-                delta_y = npr.randint(-h * 0.15, h * 0.15)
+                delta_x = npr.randint(-int(w * 0.15), int(w * 0.15)+1)
+                delta_y = npr.randint(-int(h * 0.15), int(h * 0.15)+1)
 
                 nx1 = int(max(x1 + w / 2 + delta_x - cur_size / 2, 0))
                 ny1 = int(max(y1 + h / 2 + delta_y - cur_size / 2, 0))
@@ -112,9 +127,9 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
                 max_y_landmark = -1
                 min_y_landmark = height+1
                 for j in range(5):
-                    if rot_landmark[j*2] < nx1 or rot_landmark[j*2] >= nx1 + cur_size:
+                    if rot_landmark[j*2] < nx1+border_size or rot_landmark[j*2] >= nx1 + cur_size-border_size:
                         ignore = 1
-                    if rot_landmark[j*2+1] < ny1 or rot_landmark[j*2+1] > ny1 + cur_size:
+                    if rot_landmark[j*2+1] < ny1+border_size or rot_landmark[j*2+1] >= ny1 + cur_size-border_size:
                         ignore = 1
                     if max_x_landmark < rot_landmark[j*2]:
                         max_x_landmark = rot_landmark[j*2]
@@ -127,7 +142,10 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
 												
                 if ignore == 1:
                     continue
-                if (max_x_landmark - min_x_landmark < 0.2*cur_size) and (max_y_landmark-min_y_landmark < 0.2*cur_size):
+                landmark_x_dis = max_x_landmark - min_x_landmark
+                landmark_y_dis = max_y_landmark - min_y_landmark
+                tmp_dis = landmark_x_dis*landmark_x_dis + landmark_y_dis*landmark_y_dis
+                if tmp_dis < 0.09*cur_size*cur_size:
                     continue
                 offset_x1 = (rot_landmark[0] - nx1 + 0.5) / float(cur_size)
                 offset_y1 = (rot_landmark[1] - ny1 + 0.5) / float(cur_size)
@@ -139,7 +157,8 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
                 offset_y4 = (rot_landmark[7] - ny1 + 0.5) / float(cur_size)
                 offset_x5 = (rot_landmark[8] - nx1 + 0.5) / float(cur_size)
                 offset_y5 = (rot_landmark[9] - ny1 + 0.5) / float(cur_size)
-               
+
+                rot_img,_ = image_processing.rotateWithLandmark(img,landmark, cur_angle,1)
                 cropped_im = rot_img[ny1 : ny2, nx1 : nx2, :]
                 resized_im = cv2.resize(cropped_im, (size, size), interpolation=cv2.INTER_LINEAR)
                 save_file = '%s/%d_%d.jpg'%(landmark_save_dir,idx,landmark_num)
@@ -149,6 +168,7 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
                                              offset_y1, offset_y2, offset_y3, offset_y4, offset_y5)
                     landmark_names.append(line)
                     landmark_num += 1
+                    cur_sample_num += 1
 				
     return landmark_names
 
