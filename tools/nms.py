@@ -22,7 +22,8 @@ def py_nms(dets, thresh, mode="Union"):
     keep = []
     while order.size > 0:
         i = order[0]
-        keep.append(i)
+        if x2[i] > x1[i] and y2[i] > y1[i]:
+            keep.append(i)
         xx1 = np.maximum(x1[i], x1[order[1:]])
         yy1 = np.maximum(y1[i], y1[order[1:]])
         xx2 = np.minimum(x2[i], x2[order[1:]])
