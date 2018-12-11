@@ -24,16 +24,15 @@ class MyThread(threading.Thread):
         except Exception:
             return None
 
-def gen_landmark_minibatch_thread(size, start_idx, annotation_lines, landmark_lines, imdir, landmark_save_dir, base_num):
+def gen_landmark_minibatch_thread(size, start_idx, annotation_lines, imdir, landmark_save_dir, base_num):
     num_images = len(annotation_lines)
     landmark_names = list()
     for i in range(num_images):
         cur_annotation_line = annotation_lines[i].strip().split()
-        cur_landmark_line = landmark_lines[i].strip().split()
         im_path = cur_annotation_line[0]
-        bbox = map(float, cur_annotation_line[1:])
+        bbox = map(float, cur_annotation_line[1:5])
         boxes = np.array(bbox, dtype=np.float32).reshape(-1, 4)
-        landmark = map(float, cur_landmark_line[1:])
+        landmark = map(float, cur_annotation_line[5:])
         landmarks = np.array(landmark, dtype=np.float32).reshape(-1, 10)
         img = cv2.imread(os.path.join(imdir, im_path))
         cur_landmark_names = gen_landmark_for_one_image(size, start_idx+i, img, landmark_save_dir, boxes, landmarks, base_num)
@@ -43,7 +42,7 @@ def gen_landmark_minibatch_thread(size, start_idx, annotation_lines, landmark_li
     return landmark_names
 
 
-def gen_landmark_minibatch(size, start_idx, annotation_lines, landmark_lines, imdir, landmark_save_dir, base_num, thread_num = 4):
+def gen_landmark_minibatch(size, start_idx, annotation_lines, imdir, landmark_save_dir, base_num, thread_num = 4):
     num_images = len(annotation_lines)
     num_per_thread = math.ceil(float(num_images)/thread_num)
     threads = []
@@ -51,8 +50,7 @@ def gen_landmark_minibatch(size, start_idx, annotation_lines, landmark_lines, im
         cur_start_idx = int(num_per_thread*t)
         cur_end_idx = int(min(num_per_thread*(t+1),num_images))
         cur_annotation_lines = annotation_lines[cur_start_idx:cur_end_idx]
-        cur_landmark_lines = landmark_lines[cur_start_idx:cur_end_idx]
-        cur_thread = MyThread(gen_landmark_minibatch_thread,(size, start_idx+cur_start_idx, cur_annotation_lines, cur_landmark_lines, 
+        cur_thread = MyThread(gen_landmark_minibatch_thread,(size, start_idx+cur_start_idx, cur_annotation_lines,
                                                         imdir, landmark_save_dir, base_num))
         threads.append(cur_thread)
     for t in range(thread_num):
@@ -173,9 +171,8 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
     return landmark_names
 
 def gen_landmark(size=20, base_num = 1, thread_num = 4):
-    anno_file = "%s/prepare_data/celeba_annotations/list_bbox_celeba.txt"%config.root
-    landmark_file = "%s/prepare_data/celeba_annotations/list_landmarks_celeba.txt"%config.root
-    imdir = "%s/data/img_celeba"%config.root
+    anno_file = "%s/prepare_data/celeba_annotations/good.txt"%config.root
+    imdir = "%s/data/img_align_celeba"%config.root
     landmark_save_dir = "%s/prepare_data/%d/landmark"%(config.root,size)
     
     save_dir = "%s/prepare_data/%d"%(config.root,size)
@@ -187,21 +184,16 @@ def gen_landmark(size=20, base_num = 1, thread_num = 4):
 
     with open(anno_file, 'r') as f:
         annotation_lines = f.readlines()
-    with open(landmark_file, 'r') as f:
-        landmark_lines = f.readlines()
-
-    num = len(annotation_lines)-2
+    
+    num = len(annotation_lines)
     print "%d pics in total" % num
-    annotation_lines = annotation_lines[2:]
-    landmark_lines = landmark_lines[2:]
     batch_size = thread_num*10
     landmark_num = 0
     start_idx = 0
     while start_idx < num:
         end_idx = min(start_idx+batch_size,num)
         cur_annotation_lines = annotation_lines[start_idx:end_idx]
-        cur_landmark_lines = landmark_lines[start_idx:end_idx]
-        landmark_names = gen_landmark_minibatch(size, start_idx, cur_annotation_lines, cur_landmark_lines, 
+        landmark_names = gen_landmark_minibatch(size, start_idx, cur_annotation_lines,
                                             imdir, landmark_save_dir, base_num, thread_num)
         cur_landmark_num = len(landmark_names)
         for i in range(cur_landmark_num):

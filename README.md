@@ -89,9 +89,9 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 	
 ## 带landmark
 
-需要下载[celeba](https://pan.baidu.com/s/1m3u3w_JaZn123keBaccLdw)，并解压到data/img_celeba
+需要下载[celeba](https://pan.baidu.com/s/1rUBW8NasLZGtfQ33uA6Kdg)，并解压到data/img_align_celeba
 
-图片位置在data/img_celeba/xx.jpg
+图片位置在data/img_align_celeba/xx.jpg
 
 **(17)双击O_gen_landmark.bat**
 
