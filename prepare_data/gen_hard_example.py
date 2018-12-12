@@ -251,6 +251,8 @@ def parse_args():
                         default='0.3,0.3,0.3', type=str)
     parser.add_argument('--min_face', dest='min_face', help='minimum face size for detection',
                         default=24, type=int)
+    parser.add_argument('--target_size', dest='target_size', help='target_size',
+                        default=-1, type=int)
     parser.add_argument('--thread_num', dest='thread_num', help='thread num',
                         default=4, type=int)
     parser.add_argument('--gpus', dest='gpus', help='GPU device to train with',
@@ -281,4 +283,6 @@ if __name__ == '__main__':
         size = 24
     elif test_mode == "onet" or test_mode == "hardonet":
         size = 48
+    if args.target_size > 0:
+        size = args.target_size
     save_hard_example(annotation_lines, detections, size, args.thread_num)
