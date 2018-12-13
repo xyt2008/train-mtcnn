@@ -12,7 +12,9 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 
 **(3)Rnet保持size=24不变，网络结构变为dw+sep，计算量约为原版1/3**
 
-**(4)Onet暂时没有训练，等陆续更新**
+**(4)Onet带landmark我没有训练成功过**
+
+**(5)Lnet是专门训练landmark的**
 
 # 训练建议
 
@@ -106,5 +108,9 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 **(19)双击L_train.bat**
 
 	训练Lnet
+	
+## 省硬盘的方式训练landmark(试验中)
+
+**(20)将prepare_data/celeba_annotations/good.txt复制到data/mtcnn/imglists里， 然后双击L_train_onlylandmark.bat**
 
  
