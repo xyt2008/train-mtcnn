@@ -172,7 +172,7 @@ def augment_for_one_image(annotation_line, size):
         offset_x5 = (rot_landmark[8] - x1 + 0.5) / float(w)
         offset_y5 = (rot_landmark[9] - y1 + 0.5) / float(h)
     
-    landmark = [offset_x1,offset_x2,offset_x3,offset_x4,offset_x5,offset_y1,offset_y2,offset_y2,offset_y4,offset_y5]
+    landmark = [offset_x1,offset_x2,offset_x3,offset_x4,offset_x5,offset_y1,offset_y2,offset_y3,offset_y4,offset_y5]
 	
     if npr.randint(0,2) == 1:
         landmark[0], landmark[1] = 1.0-landmark[1], 1.0-landmark[0]
