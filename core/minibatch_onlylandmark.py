@@ -173,11 +173,13 @@ def augment_for_one_image(annotation_line, size):
         offset_y5 = (rot_landmark[9] - y1 + 0.5) / float(h)
     
     landmark = [offset_x1,offset_x2,offset_x3,offset_x4,offset_x5,offset_y1,offset_y2,offset_y3,offset_y4,offset_y5]
-    """ #flip 代码可能有问题
+
     if npr.randint(0,2) == 1:
         landmark[0], landmark[1] = 1.0-landmark[1], 1.0-landmark[0]
         landmark[2] = 1.0-landmark[2]
         landmark[3], landmark[4] = 1.0-landmark[4], 1.0-landmark[3]
+        landmark[5], landmark[6] = landmark[6], landmark[5]
+        landmark[8], landmark[9] = landmark[9], landmark[8]
         resized_im = resized_im[:, ::-1, :]
-    """
+
     return resized_im,landmark
