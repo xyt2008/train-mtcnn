@@ -90,7 +90,7 @@ def augment_for_one_image(annotation_line, size):
     h = bbox_size
  
 
-    cur_angle = npr.randint(-180,180)
+    cur_angle = npr.randint(int(config.min_rot_angle),int(config.max_rot_angle)+1)
     try_num = 0
     cur_sample_num = 0
     base_num = 1

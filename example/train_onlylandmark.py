@@ -67,7 +67,7 @@ def train_net(sym, prefix, ctx, pretrained, epoch, begin_epoch, end_epoch, imdb,
     label_names = [k[0] for k in train_data.provide_label]
 
     batch_end_callback = mx.callback.Speedometer(train_data.batch_size, frequent=frequent)
-    epoch_end_callback = mx.callback.do_checkpoint(prefix,period=100)
+    epoch_end_callback = mx.callback.do_checkpoint(prefix,period=50)
     eval_metrics = mx.metric.CompositeEvalMetric()
     if config.use_landmark10:
         eval_metrics.add(metric_onlylandmark10.LANDMARK_MSE())
