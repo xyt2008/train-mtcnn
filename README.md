@@ -91,9 +91,9 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 	
 ## 带landmark
 
-需要下载[celeba](https://pan.baidu.com/s/1rUBW8NasLZGtfQ33uA6Kdg)，并解压到data/img_align_celeba
+下载[img_celeba](https://pan.baidu.com/s/1f6lYVNVYR7h28Vh-1nIPnQ)，解压到data/img_celeba
 
-图片位置在data/img_align_celeba/xx.jpg
+图片位置在data/img_celeba/xx.jpg
 
 **(17)双击O_gen_landmark.bat**
 
@@ -109,8 +109,36 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 
 	训练Lnet
 	
-## 省硬盘的方式训练landmark(试验中)
+# 省硬盘的方式训练landmark(试验中)
 
-**(20)将prepare_data/celeba_annotations/good.txt复制到data/mtcnn/imglists里， 然后双击L_train_onlylandmark.bat**
+选择以下三个数据集之一：(A)是原始celeba数据，(B)(C)是我加工过的，加载速度B>C>A
 
- 
+(A)[img_celeba](https://pan.baidu.com/s/1f6lYVNVYR7h28Vh-1nIPnQ)，解压到data/img_celeba
+
+图片位置在data/img_celeba/xx.jpg
+
+以文本方式编辑 L_train_onlylandmark.bat, 设置参数--image_set img_celeba_all
+
+修改config.py中config.landmark_img_set='img_celeba'
+
+双击 L_train_onlylandmark.bat 运行
+
+(B)[img_align_celeba](https://pan.baidu.com/s/1rUBW8NasLZGtfQ33uA6Kdg)，解压到data/img_align_celeba
+
+图片位置在data/img_align_celeba/xx.jpg
+
+以文本方式编辑 L_train_onlylandmark.bat, 设置参数--image_set img_align_celeba_good
+
+修改config.py中config.landmark_img_set='img_align_celeba'
+
+双击 L_train_onlylandmark.bat 运行
+
+(C)[img_cut_celeba](https://pan.baidu.com/s/1XeGsYT_6VCP3n177oa3KGw)，解压到data/img_cut_celeba
+
+图片位置在data/img_cut_celeba/xx.jpg
+
+以文本方式编辑 L_train_onlylandmark.bat, 设置参数--image_set img_cut_celeba_all
+
+修改config.py中config.landmark_img_set='img_cut_celeba'
+
+双击 L_train_onlylandmark.bat 运行

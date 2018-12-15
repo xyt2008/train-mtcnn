@@ -70,7 +70,7 @@ def get_minibatch(imdb, im_size, thread_num = 4):
 
 def augment_for_one_image(annotation_line, size):
     annotation = annotation_line.strip().split(' ')
-    img_path = config.root+'/data/img_align_celeba/'+annotation[0]
+    img_path = config.root+'/data/%s/'%config.landmark_img_set+annotation[0]
     img = cv2.imread(img_path)
     width = img.shape[1]
     height = img.shape[0]

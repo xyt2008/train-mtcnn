@@ -292,25 +292,33 @@ def L_Net(mode="train"):
     bn5 = mx.sym.BatchNorm(data=conv5, name='bn5', fix_gamma=False,momentum=0.9)
     prelu5 = mx.symbol.LeakyReLU(data=bn5, act_type="prelu", name="prelu5")
 	"""
-    conv1 = mx.symbol.Convolution(data=data, kernel=(3, 3), num_filter=32, name="conv1")
+    conv1 = mx.symbol.Convolution(data=data, kernel=(3, 3), num_filter=16, name="conv1") 
     prelu1 = mx.symbol.LeakyReLU(data=conv1, act_type="prelu", name="prelu1")
-    pool1 = mx.symbol.Pooling(data=prelu1, pool_type="max", pooling_convention="full", kernel=(3, 3), stride=(2, 2), name="pool1")
+    pool1 = mx.symbol.Pooling(data=prelu1, pool_type="avg", pooling_convention="full", kernel=(3, 3), stride=(2, 2), name="pool1")
 
-    conv2 = mx.symbol.Convolution(data=pool1, kernel=(3, 3), num_filter=64, name="conv2")
-    prelu2 = mx.symbol.LeakyReLU(data=conv2, act_type="prelu", name="prelu2")
-    pool2 = mx.symbol.Pooling(data=prelu2, pool_type="max", pooling_convention="full", kernel=(3, 3), stride=(2, 2), name="pool2")
+    conv2_dw = mx.symbol.Convolution(data=pool1, kernel=(3, 3), num_filter=16, num_group=16, name="conv2_dw")
+    prelu2_dw = mx.symbol.LeakyReLU(data=conv2_dw, act_type="prelu", name="prelu2_dw")
+    conv2_sep = mx.symbol.Convolution(data=prelu2_dw, kernel=(1, 1), num_filter=32, name="conv2_sep")
+    prelu2_sep = mx.symbol.LeakyReLU(data=conv2_sep, act_type="prelu", name="prelu2_sep")
+    pool2 = mx.symbol.Pooling(data=prelu2_sep, pool_type="avg", pooling_convention="full", kernel=(3, 3), stride=(2, 2), name="pool2")
 
-    conv3 = mx.symbol.Convolution(data=pool2, kernel=(3, 3), num_filter=64, name="conv3")
-    prelu3 = mx.symbol.LeakyReLU(data=conv3, act_type="prelu", name="prelu3")
-    pool3 = mx.symbol.Pooling(data=prelu3, pool_type="max", pooling_convention="full", kernel=(2, 2), stride=(2, 2), name="pool3")
+    conv3_dw = mx.symbol.Convolution(data=pool2, kernel=(3, 3), num_filter=32, num_group=32, name="conv3_dw")
+    prelu3_dw = mx.symbol.LeakyReLU(data=conv3_dw, act_type="prelu", name="prelu3_dw")
+    conv3_sep = mx.symbol.Convolution(data=prelu3_dw, kernel=(1, 1), num_filter=64, name="conv3_sep")
+    prelu3_sep = mx.symbol.LeakyReLU(data=conv3_sep, act_type="prelu", name="prelu3_sep")
+    pool3 = mx.symbol.Pooling(data=prelu3_sep, pool_type="avg", pooling_convention="full", kernel=(2, 2), stride=(2, 2), name="pool3")
 
-    conv4 = mx.symbol.Convolution(data=pool3, kernel=(2, 2), num_filter=128, name="conv4")
-    prelu4 = mx.symbol.LeakyReLU(data=conv4, act_type="prelu", name="prelu4")
+    conv4_dw = mx.symbol.Convolution(data=pool3, kernel=(2, 2), num_filter=64,num_group=64, name="conv4_dw")
+    prelu4_dw = mx.symbol.LeakyReLU(data=conv4_dw, act_type="prelu", name="prelu4_dw")
+    conv4_sep = mx.symbol.Convolution(data=prelu4_dw, kernel=(1, 1), num_filter=128, name="conv4_sep")
+    prelu4_sep = mx.symbol.LeakyReLU(data=conv4_sep, act_type="prelu", name="prelu4_sep")
 
-    fc1 = mx.symbol.FullyConnected(data=prelu4, num_hidden=256, name="fc1")
-    prelu5 = mx.symbol.LeakyReLU(data=fc1, act_type="prelu", name="prelu5")
-
-    conv6_3 = mx.symbol.FullyConnected(data=prelu5, num_hidden=10, name="conv6_3")	
+    conv5_dw = mx.symbol.Convolution(data=prelu4_sep, kernel=(3, 3), num_filter=128,num_group=128, name="conv5_dw")
+    prelu5_dw = mx.symbol.LeakyReLU(data=conv5_dw, act_type="prelu", name="prelu5_dw")
+    conv5_sep = mx.symbol.Convolution(data=prelu5_dw, kernel=(1, 1), num_filter=128, name="conv5_sep")
+    prelu5_sep = mx.symbol.LeakyReLU(data=conv5_sep, act_type="prelu", name="prelu5_sep")
+	
+    conv6_3 = mx.symbol.FullyConnected(data=prelu5_sep, num_hidden=10, name="conv6_3")	
     bn6_3 = mx.sym.BatchNorm(data=conv6_3, name='bn6_3', fix_gamma=False,momentum=0.9)
     if mode == "test":
         landmark_pred = bn6_3
