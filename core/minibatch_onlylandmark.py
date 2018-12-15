@@ -159,7 +159,13 @@ def augment_for_one_image(annotation_line, size):
         cur_sample_num += 1
 
     if force_accept == 1:
-        cropped_im = img[y1:y1+h,x1:x1+w,:]
+        ny1 = max(0,y1)
+        ny2 = min(height,y1+h)
+        nx1 = max(0,x1)
+        nx2 = min(width,x1+w)
+        w = nx2-nx1
+        h = ny2-ny1
+        cropped_im = img[ny1 : ny2, nx1 : nx2, :]
         resized_im = cv2.resize(cropped_im, (size, size), interpolation=cv2.INTER_LINEAR)
         offset_x1 = (rot_landmark[0] - x1 + 0.5) / float(w)
         offset_y1 = (rot_landmark[1] - y1 + 0.5) / float(h)
