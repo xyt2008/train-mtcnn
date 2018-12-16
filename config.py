@@ -15,6 +15,7 @@ config.landmark_L1_outlier_thresh = 1
 
 config.EPS = 1e-14
 config.enable_gray = True
+config.enable_blur = True
 config.use_landmark10 = False
 config.min_rot_angle = -45
 config.max_rot_angle = 45
