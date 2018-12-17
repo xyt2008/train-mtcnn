@@ -76,6 +76,7 @@ def augment_for_one_image(annotation_line, size):
     height = img.shape[0]
     bbox = np.array(annotation[1:5],dtype=np.float32)
     landmark = np.array(annotation[5:15],dtype=np.float32)
+    #print bbox,landmark
     dis1 = (landmark[0] - landmark[8])*(landmark[0] - landmark[8])+(landmark[1] - landmark[9])*(landmark[1] - landmark[9])
     dis2 = (landmark[2] - landmark[6])*(landmark[2] - landmark[6])+(landmark[3] - landmark[7])*(landmark[3] - landmark[7])
     dis = max(dis1,dis2)
@@ -101,12 +102,12 @@ def augment_for_one_image(annotation_line, size):
             force_accept = 1
             break
         rot_landmark = image_processing.rotateLandmark(landmark, cur_angle,1)
-        cur_size = int(npr.randint(5, 25)*0.1*bbox_size)
+        cur_size = int(npr.randint(5, 18)*0.1*bbox_size)
         border_size = int(cur_size*0.05)
 
         # delta here is the offset of box center
-        delta_x = npr.randint(-int(w * 0.2), int(w * 0.2)+1)
-        delta_y = npr.randint(-int(h * 0.2), int(h * 0.2)+1)
+        delta_x = npr.randint(-int(w * 0.3), int(w * 0.3)+1)
+        delta_y = npr.randint(-int(h * 0.3), int(h * 0.3)+1)
 
         nx1 = int(max(x1 + w / 2 + delta_x - cur_size / 2, 0))
         ny1 = int(max(y1 + h / 2 + delta_y - cur_size / 2, 0))
@@ -139,7 +140,7 @@ def augment_for_one_image(annotation_line, size):
         landmark_x_dis = max_x_landmark - min_x_landmark
         landmark_y_dis = max_y_landmark - min_y_landmark
         tmp_dis = landmark_x_dis*landmark_x_dis + landmark_y_dis*landmark_y_dis
-        if tmp_dis < 0.04*cur_size*cur_size:
+        if tmp_dis < 0.16*cur_size*cur_size:
             continue
         offset_x1 = (rot_landmark[0] - nx1 + 0.5) / float(cur_size)
         offset_y1 = (rot_landmark[1] - ny1 + 0.5) / float(cur_size)
@@ -179,7 +180,7 @@ def augment_for_one_image(annotation_line, size):
         offset_y5 = (rot_landmark[9] - y1 + 0.5) / float(h)
     
     landmark = [offset_x1,offset_x2,offset_x3,offset_x4,offset_x5,offset_y1,offset_y2,offset_y3,offset_y4,offset_y5]
-
+    
     if npr.randint(0,2) == 1:
         landmark[0], landmark[1] = 1.0-landmark[1], 1.0-landmark[0]
         landmark[2] = 1.0-landmark[2]
@@ -187,11 +188,11 @@ def augment_for_one_image(annotation_line, size):
         landmark[5], landmark[6] = landmark[6], landmark[5]
         landmark[8], landmark[9] = landmark[9], landmark[8]
         resized_im = resized_im[:, ::-1, :]
-		
+    
     if config.enable_blur:
         kernel_size = npr.randint(-5,5)*2+1
         if kernel_size >= 3:
             blur_im = cv2.GaussianBlur(resized_im,(kernel_size,kernel_size),0)
             resized_im = blur_im
-
+        
     return resized_im,landmark
