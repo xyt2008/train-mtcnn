@@ -77,10 +77,10 @@ def augment_for_one_image(annotation_line, size):
     bbox = np.array(annotation[1:5],dtype=np.float32)
     landmark = np.array(annotation[5:15],dtype=np.float32)
     #print bbox,landmark
-    dis1 = (landmark[0] - landmark[8])*(landmark[0] - landmark[8])+(landmark[1] - landmark[9])*(landmark[1] - landmark[9])
-    dis2 = (landmark[2] - landmark[6])*(landmark[2] - landmark[6])+(landmark[3] - landmark[7])*(landmark[3] - landmark[7])
-    dis = max(dis1,dis2)
-    dis = dis**0.5
+    #dis1 = (landmark[0] - landmark[8])*(landmark[0] - landmark[8])+(landmark[1] - landmark[9])*(landmark[1] - landmark[9])
+    #dis2 = (landmark[2] - landmark[6])*(landmark[2] - landmark[6])+(landmark[3] - landmark[7])*(landmark[3] - landmark[7])
+    #dis = max(dis1,dis2)
+    #dis = dis**0.5
     x1, y1, w, h = bbox
     cx = landmark[4]
     cy = landmark[5]
@@ -103,11 +103,14 @@ def augment_for_one_image(annotation_line, size):
             break
         rot_landmark = image_processing.rotateLandmark(landmark, cur_angle,1)
         cur_size = int(npr.randint(5, 18)*0.1*bbox_size)
-        border_size = int(cur_size*0.05)
+        up_border_size = int(cur_size*0.15)
+        down_border_size = 0
+        left_border_size = int(cur_size*0.05)
+        right_border_size = int(cur_size*0.05)
 
         # delta here is the offset of box center
-        delta_x = npr.randint(-int(w * 0.4), int(w * 0.4)+1)
-        delta_y = npr.randint(-int(h * 0.4), int(h * 0.4)+1)
+        delta_x = npr.randint(-int(w * 0.35), int(w * 0.35)+1)
+        delta_y = npr.randint(-int(h * 0.3), int(h * 0.4)+1)
 
         nx1 = int(max(x1 + w / 2 + delta_x - cur_size / 2, 0))
         ny1 = int(max(y1 + h / 2 + delta_y - cur_size / 2, 0))
@@ -122,9 +125,9 @@ def augment_for_one_image(annotation_line, size):
         max_y_landmark = -1
         min_y_landmark = height+1
         for j in range(5):
-            if rot_landmark[j*2] < nx1+border_size or rot_landmark[j*2] >= nx1 + cur_size-border_size:
+            if rot_landmark[j*2] < nx1+left_border_size or rot_landmark[j*2] >= nx1 + cur_size-right_border_size:
                 ignore = 1
-            if rot_landmark[j*2+1] < ny1+border_size or rot_landmark[j*2+1] >= ny1 + cur_size-border_size:
+            if rot_landmark[j*2+1] < ny1+up_border_size or rot_landmark[j*2+1] >= ny1 + cur_size-down_border_size:
                 ignore = 1
             if max_x_landmark < rot_landmark[j*2]:
                 max_x_landmark = rot_landmark[j*2]
@@ -140,7 +143,7 @@ def augment_for_one_image(annotation_line, size):
         landmark_x_dis = max_x_landmark - min_x_landmark
         landmark_y_dis = max_y_landmark - min_y_landmark
         tmp_dis = landmark_x_dis*landmark_x_dis + landmark_y_dis*landmark_y_dis
-        if tmp_dis < 0.16*cur_size*cur_size:
+        if tmp_dis < 0.20*cur_size*cur_size:
             continue
         offset_x1 = (rot_landmark[0] - nx1 + 0.5) / float(cur_size)
         offset_y1 = (rot_landmark[1] - ny1 + 0.5) / float(cur_size)
@@ -190,7 +193,7 @@ def augment_for_one_image(annotation_line, size):
         resized_im = resized_im[:, ::-1, :]
     
     if config.enable_blur:
-        kernel_size = npr.randint(-5,5)*2+1
+        kernel_size = npr.randint(-5,4)*2+1
         if kernel_size >= 3:
             blur_im = cv2.GaussianBlur(resized_im,(kernel_size,kernel_size),0)
             resized_im = blur_im
