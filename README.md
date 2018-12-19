@@ -142,3 +142,5 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 修改config.py中config.landmark_img_set='img_cut_celeba'
 
 双击 L_train_onlylandmark.bat 运行
+
+**备注：调整minibatch_onlylandmark.py里的参数得到的landmark精度不一样**
