@@ -76,10 +76,10 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
     for bb in range(box_num):
         box = boxes[bb]
         landmark = landmarks[bb]
-        dis1 = (landmark[0] - landmark[8])*(landmark[0] - landmark[8])+(landmark[1] - landmark[9])*(landmark[1] - landmark[9])
-        dis2 = (landmark[2] - landmark[6])*(landmark[2] - landmark[6])+(landmark[3] - landmark[7])*(landmark[3] - landmark[7])
-        dis = max(dis1,dis2)
-        dis = dis**0.5
+        #dis1 = (landmark[0] - landmark[8])*(landmark[0] - landmark[8])+(landmark[1] - landmark[9])*(landmark[1] - landmark[9])
+        #dis2 = (landmark[2] - landmark[6])*(landmark[2] - landmark[6])+(landmark[3] - landmark[7])*(landmark[3] - landmark[7])
+        #dis = max(dis1,dis2)
+        #dis = dis**0.5
         x1, y1, w, h = box
         cx = landmark[4]
         cy = landmark[5]
@@ -94,7 +94,7 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
         if max(w, h) < 40 or x1 < 0 or y1 < 0:
             continue
 
-        angles = [-50,-40,-30,-20,-10,0,10,20,30,40,50]
+        angles = [-25,-20,-15,-10,-5,0,5,10,15,20,25]
         angle_num = len(angles)
         for rr in range(angle_num):
             cur_angle = angles[rr]
@@ -105,12 +105,15 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
                 if try_num > base_num*1000:
                     break
                 rot_landmark = image_processing.rotateLandmark(landmark, cur_angle,1)
-                cur_size = int(npr.randint(8, 20)*0.1*dis)
-                border_size = int(cur_size*0.15)
+                cur_size = int(npr.randint(5, 18)*0.1*bbox_size)
+                left_border_size = int(cur_size*0.05)
+                right_border_size = int(cur_size*0.05)
+                up_border_size = int(cur_size*0.15)
+                down_border_size = int(-cur_size*0.05)
 
                 # delta here is the offset of box center
-                delta_x = npr.randint(-int(w * 0.15), int(w * 0.15)+1)
-                delta_y = npr.randint(-int(h * 0.15), int(h * 0.15)+1)
+                delta_x = npr.randint(-int(w * 0.35), int(w * 0.35)+1)
+                delta_y = npr.randint(-int(h * 0.3), int(h * 0.4)+1)
 
                 nx1 = int(max(x1 + w / 2 + delta_x - cur_size / 2, 0))
                 ny1 = int(max(y1 + h / 2 + delta_y - cur_size / 2, 0))
@@ -143,7 +146,7 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
                 landmark_x_dis = max_x_landmark - min_x_landmark
                 landmark_y_dis = max_y_landmark - min_y_landmark
                 tmp_dis = landmark_x_dis*landmark_x_dis + landmark_y_dis*landmark_y_dis
-                if tmp_dis < 0.09*cur_size*cur_size:
+                if tmp_dis < 0.20*cur_size*cur_size:
                     continue
                 offset_x1 = (rot_landmark[0] - nx1 + 0.5) / float(cur_size)
                 offset_y1 = (rot_landmark[1] - ny1 + 0.5) / float(cur_size)
@@ -171,7 +174,7 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
     return landmark_names
 
 def gen_landmark(size=20, base_num = 1, thread_num = 4):
-    anno_file = "%s/prepare_data/celeba_annotations/good.txt"%config.root
+    anno_file = "%s/data/mtcnn/imglists/img_cut_celeba_all.txt"%config.root
     imdir = "%s/data/img_align_celeba"%config.root
     landmark_save_dir = "%s/prepare_data/%d/landmark"%(config.root,size)
     
