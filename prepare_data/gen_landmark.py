@@ -128,9 +128,9 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
                 max_y_landmark = -1
                 min_y_landmark = height+1
                 for j in range(5):
-                    if rot_landmark[j*2] < nx1+border_size or rot_landmark[j*2] >= nx1 + cur_size-border_size:
+                    if rot_landmark[j*2] < nx1+left_border_size or rot_landmark[j*2] >= nx1 + cur_size-right_border_size:
                         ignore = 1
-                    if rot_landmark[j*2+1] < ny1+border_size or rot_landmark[j*2+1] >= ny1 + cur_size-border_size:
+                    if rot_landmark[j*2+1] < ny1+up_border_size or rot_landmark[j*2+1] >= ny1 + cur_size-down_border_size:
                         ignore = 1
                     if max_x_landmark < rot_landmark[j*2]:
                         max_x_landmark = rot_landmark[j*2]
