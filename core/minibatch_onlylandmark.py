@@ -171,16 +171,16 @@ def augment_for_one_image(annotation_line, size):
         h = ny2-ny1
         cropped_im = img[ny1 : ny2, nx1 : nx2, :]
         resized_im = cv2.resize(cropped_im, (size, size), interpolation=cv2.INTER_LINEAR)
-        offset_x1 = (rot_landmark[0] - x1 + 0.5) / float(w)
-        offset_y1 = (rot_landmark[1] - y1 + 0.5) / float(h)
-        offset_x2 = (rot_landmark[2] - x1 + 0.5) / float(w)
-        offset_y2 = (rot_landmark[3] - y1 + 0.5) / float(h)
-        offset_x3 = (rot_landmark[4] - x1 + 0.5) / float(w)
-        offset_y3 = (rot_landmark[5] - y1 + 0.5) / float(h)
-        offset_x4 = (rot_landmark[6] - x1 + 0.5) / float(w)
-        offset_y4 = (rot_landmark[7] - y1 + 0.5) / float(h)
-        offset_x5 = (rot_landmark[8] - x1 + 0.5) / float(w)
-        offset_y5 = (rot_landmark[9] - y1 + 0.5) / float(h)
+        offset_x1 = (landmark[0] - x1 + 0.5) / float(w)
+        offset_y1 = (landmark[1] - y1 + 0.5) / float(h)
+        offset_x2 = (landmark[2] - x1 + 0.5) / float(w)
+        offset_y2 = (landmark[3] - y1 + 0.5) / float(h)
+        offset_x3 = (landmark[4] - x1 + 0.5) / float(w)
+        offset_y3 = (landmark[5] - y1 + 0.5) / float(h)
+        offset_x4 = (landmark[6] - x1 + 0.5) / float(w)
+        offset_y4 = (landmark[7] - y1 + 0.5) / float(h)
+        offset_x5 = (landmark[8] - x1 + 0.5) / float(w)
+        offset_y5 = (landmark[9] - y1 + 0.5) / float(h)
     
     landmark = [offset_x1,offset_x2,offset_x3,offset_x4,offset_x5,offset_y1,offset_y2,offset_y3,offset_y4,offset_y5]
     
