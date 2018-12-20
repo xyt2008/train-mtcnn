@@ -26,11 +26,11 @@ def parse_args():
     parser.add_argument('--dataset_path', dest='dataset_path', help='dataset folder',
                         default='data/mtcnn', type=str)
     parser.add_argument('--prefix', dest='prefix', help='new model prefix',
-                        default='model/lnet', type=str)
+                        default='model/lnet106', type=str)
     parser.add_argument('--gpus', dest='gpu_ids', help='GPU device to train with',
                         default='0', type=str)
     parser.add_argument('--pretrained', dest='pretrained', help='pretrained prefix',
-                        default='model/lnet', type=str)
+                        default='model/lnet106', type=str)
     parser.add_argument('--epoch', dest='epoch', help='load epoch',
                         default=0, type=int)
     parser.add_argument('--begin_epoch', dest='begin_epoch', help='begin epoch of training',
