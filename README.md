@@ -158,7 +158,7 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 	data/Training_data106/IBUG
 	data/Training_data106/LFPW
 	
-将landmark106.txt拷贝到data/mtcnn/imglists/landmark106.txt， 在config.py设置
+将 data/Training_data106/landmark106.txt拷贝到data/mtcnn/imglists/landmark106.txt， 在config.py设置
 
 	config.landmark_img_set = 'Training_data106'
 	
