@@ -3,6 +3,7 @@ import negativemining
 import negativemining_landmark
 import negativemining_onlylandmark
 import negativemining_onlylandmark10
+import negativemining_onlylandmark106
 from config import config
 
 
@@ -375,7 +376,7 @@ def L106_Net(mode="train"):
         landmark_pred = mx.symbol.LinearRegressionOutput(data=bn6_3, label=landmark_target,
                                                  grad_scale=1, name="landmark_pred")
         out = mx.symbol.Custom(landmark_pred=landmark_pred, landmark_target=landmark_target, 
-                            op_type='negativemining_onlylandmark', name="negative_mining")
+                            op_type='negativemining_onlylandmark106', name="negative_mining")
         group = mx.symbol.Group([out])
         
     return group
