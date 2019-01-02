@@ -1,15 +1,32 @@
 import numpy as np
 from numpy import *
+import mxnet.ndarray as nd
 import cv2
 import math
+import sys,os
+sys.path.append(os.getcwd())
+from config import config
 
-def transform(im):
+def transform(im, train = False):
     """
     transform into mxnet tensor
     substract pixel size and transform to correct format
     :param im: [height, width, channel] in BGR
     :return: [batch, channel, height, width]
     """
+    if train:
+        scale = np.random.randint(3,7) * 0.2
+        im = im * scale
+        if config.enable_gray:
+            gray_flag = np.random.randint(0,2)
+            if gray_flag == 1:
+                #im[:,:,:] = np.sum(im * [0.114,0.587,0.299], axis=-1, keepdims=True)
+                gray_im = im[:,:,0]*0.114+im[:,:,1]*0.587+im[:,:,2]*0.299
+                im[:,:,0] = gray_im
+                im[:,:,1] = gray_im
+                im[:,:,2] = gray_im
+                
+		
     im_tensor = im.transpose(2, 0, 1)
     im_tensor = im_tensor[np.newaxis, :]
     im_tensor = (im_tensor - 127.5)*0.0078125
@@ -60,34 +77,94 @@ def brighter(image, percetage=1.5):
             image_copy[xj,xi,1] = np.clip(int(image[xj,xi,1]*percetage),a_max=255,a_min=0)
             image_copy[xj,xi,2] = np.clip(int(image[xj,xi,2]*percetage),a_max=255,a_min=0)
     return image_copy
-def rotate(image, angle=15, scale=0.9):
-    w = image.shape[1]
-    h = image.shape[0]
-    #rotate matrix
-    M = cv2.getRotationMatrix2D((w/2,h/2), angle, scale)
-    #rotate
-    image = cv2.warpAffine(image,M,(w,h))
-    return image
-	
+
 def rotateWithLandmark(image, landmark, angle, scale):
-    w = image.shape[1]
-    h = image.shape[0]
-    cx = landmark[4]
-    cy = landmark[5]
-    #rotate matrix
-    M = cv2.getRotationMatrix2D((cx,cy), angle, scale)
+    if angle == 0:
+        rot_image = image.copy()
+        landmark1 = landmark.copy()
+        return rot_image,landmark1
+    else:
+        w = image.shape[1]
+        h = image.shape[0]
+        cx = landmark[4]
+        cy = landmark[5]
+        #rotate matrix
+        M = cv2.getRotationMatrix2D((cx,cy), angle, scale)
     
     
-    in_coords = np.array([[landmark[0], landmark[2], landmark[4], landmark[6], landmark[8]], 
-                          [landmark[1], landmark[3], landmark[5], landmark[7], landmark[9]], 
-                          [1,1,1,1,1]], dtype=np.float32)
+        in_coords = np.array([[landmark[0], landmark[2], landmark[4], landmark[6], landmark[8]], 
+                              [landmark[1], landmark[3], landmark[5], landmark[7], landmark[9]], 
+                              [1,1,1,1,1]], dtype=np.float32)
     
-    #rotate
+        #rotate
   
-    image = cv2.warpAffine(image,M,(w,h))
-    out_coords = np.dot(M,in_coords)
-    landmark1 = np.array(landmark,dtype=np.float32).copy()
-    for i in range(5):
-        landmark1[i*2] = out_coords[0][i]
-        landmark1[i*2+1] = out_coords[1][i]
-    return image, landmark1
+        rot_image = cv2.warpAffine(image,M,(w,h))
+        out_coords = np.dot(M,in_coords)
+        landmark1 = np.array(landmark,dtype=np.float32).copy()
+        for i in range(5):
+            landmark1[i*2] = out_coords[0][i]
+            landmark1[i*2+1] = out_coords[1][i]
+        return rot_image, landmark1
+		
+def rotateWithLandmark106(image, cx,cy,landmark_x,landmark_y, angle, scale):
+    if angle == 0:
+        rot_image = image.copy()
+        landmark_x1 = landmark_x.copy()
+        landmark_y1 = landmark_y.copy()
+        return rot_image,landmark_x1,landmark_y1
+    else:
+        w = image.shape[1]
+        h = image.shape[0]
+        #rotate matrix
+        M = cv2.getRotationMatrix2D((cx,cy), angle, scale)
+    
+        #rotate
+  
+        rot_image = cv2.warpAffine(image,M,(w,h))
+        landmark_x1 = np.array(landmark_x,dtype=np.float32).copy()
+        landmark_y1 = np.array(landmark_y,dtype=np.float32).copy()
+        for i in range(106):
+            landmark_x1[i] = M[0][0]*landmark_x[i]+M[0][1]*landmark_y1[i]+M[0][2]
+            landmark_y1[i] = M[1][0]*landmark_x[i]+M[1][1]*landmark_y1[i]+M[1][2]
+        return rot_image, landmark_x1,landmark_y1
+		
+def rotateLandmark(landmark, angle, scale):
+    if angle == 0:
+        landmark1 = landmark.copy()
+        return landmark1
+    else:
+        cx = landmark[4]
+        cy = landmark[5]
+        #rotate matrix
+        M = cv2.getRotationMatrix2D((cx,cy), angle, scale)
+    
+    
+        in_coords = np.array([[landmark[0], landmark[2], landmark[4], landmark[6], landmark[8]], 
+                              [landmark[1], landmark[3], landmark[5], landmark[7], landmark[9]], 
+                              [1,1,1,1,1]], dtype=np.float32)
+    
+        #rotate
+  
+        out_coords = np.dot(M,in_coords)
+        landmark1 = np.array(landmark,dtype=np.float32).copy()
+        for i in range(5):
+            landmark1[i*2] = out_coords[0][i]
+            landmark1[i*2+1] = out_coords[1][i]
+        return landmark1
+		
+def rotateLandmark106(cx,cy,landmark_x,landmark_y, angle, scale):
+    if angle == 0:
+        landmark_x1 = landmark_x.copy()
+        landmark_y1 = landmark_y.copy()
+        return landmark_x1,landmark_y1
+    else:
+        #rotate matrix
+        M = cv2.getRotationMatrix2D((cx,cy), angle, scale)
+    
+        #rotate
+        landmark_x1 = np.array(landmark_x,dtype=np.float32).copy()
+        landmark_y1 = np.array(landmark_y,dtype=np.float32).copy()
+        for i in range(106):
+            landmark_x1[i] = M[0][0]*landmark_x[i]+M[0][1]*landmark_y1[i]+M[0][2]
+            landmark_y1[i] = M[1][0]*landmark_x[i]+M[1][1]*landmark_y1[i]+M[1][2]
+        return landmark_x1,landmark_y1

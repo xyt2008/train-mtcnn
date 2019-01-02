@@ -211,11 +211,14 @@ def gen_hard_for_one_image(size, idx, img, det_boxes, gt_boxes,  neg_hard_save_d
         height = y_bottom - y_top + 1
 
         # ignore box that is too small or beyond image border
-        if width < 20 or x_left < 0 or y_top < 0 or x_right > img.shape[1] - 1 or y_bottom > img.shape[0] - 1:
+        if width < 20 or height < 20 or x_left < 0 or y_top < 0 or x_right > img.shape[1] - 1 or y_bottom > img.shape[0] - 1:
             continue
 
         # compute intersection over union(IoU) between current box and all gt boxes
-        Iou = IoU(box, gt_boxes)
+        if gt_boxes.shape[0] == 0:
+            Iou = 0
+        else:
+            Iou = IoU(box, gt_boxes)
         cropped_im = img[y_top:y_bottom + 1, x_left:x_right + 1, :]
         resized_im = cv2.resize(cropped_im, (size, size), interpolation=cv2.INTER_LINEAR)
 
@@ -223,10 +226,10 @@ def gen_hard_for_one_image(size, idx, img, det_boxes, gt_boxes,  neg_hard_save_d
         if np.max(Iou) < 0.1:
             # Iou with all gt_boxes must below 0.1
             save_file = os.path.join(neg_hard_save_dir, '%d_%d.jpg'%(idx,neg_hard_num))
-            cv2.imwrite(save_file, resized_im)
-            line = '%s/%d_%d 0'%(neg_hard_save_dir,idx,neg_hard_num)
-            neg_hard_names.append(line)
-            neg_hard_num += 1
+            if cv2.imwrite(save_file, resized_im):
+                line = '%s/%d_%d 0'%(neg_hard_save_dir,idx,neg_hard_num)
+                neg_hard_names.append(line)
+                neg_hard_num += 1
 
     return neg_hard_names
 
@@ -244,13 +247,15 @@ def parse_args():
     parser.add_argument('--prefix', dest='prefix', help='prefix of model name',
                         default='%s/model/pnet20'%config.root+',%s/model/rnet'%config.root+',%s/model/onet'%config.root, type=str)
     parser.add_argument('--epoch', dest='epoch', help='epoch number of model to load', 
-                        default='13,20,16', type=str)
+                        default='16,16,16', type=str)
     parser.add_argument('--batch_size', dest='batch_size', help='list of batch size used in prediction', 
                         default='2048,256,16', type=str)
     parser.add_argument('--thresh', dest='thresh', help='list of thresh for pnet, rnet, onet',
                         default='0.3,0.3,0.3', type=str)
     parser.add_argument('--min_face', dest='min_face', help='minimum face size for detection',
                         default=24, type=int)
+    parser.add_argument('--target_size', dest='target_size', help='target_size',
+                        default=-1, type=int)
     parser.add_argument('--thread_num', dest='thread_num', help='thread num',
                         default=4, type=int)
     parser.add_argument('--gpus', dest='gpus', help='GPU device to train with',
@@ -281,4 +286,6 @@ if __name__ == '__main__':
         size = 24
     elif test_mode == "onet" or test_mode == "hardonet":
         size = 48
+    if args.target_size > 0:
+        size = args.target_size
     save_hard_example(annotation_lines, detections, size, args.thread_num)

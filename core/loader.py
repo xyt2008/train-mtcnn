@@ -222,6 +222,8 @@ class ImageLoader(mx.io.DataIter):
                         landmark_target[0], landmark_target[1] = 1.0-landmark_target[1], 1.0-landmark_target[0]
                         landmark_target[2] = 1.0-landmark_target[2]
                         landmark_target[3], landmark_target[4] = 1.0-landmark_target[4], 1.0-landmark_target[3]
+                        landmark_target[5], landmark_target[6] = landmark_target[6], landmark_target[5]
+                        landmark_target[8], landmark_target[9] = landmark_target[9], landmark_target[8]
                     imdb_['landmark_target'] = landmark_target
 
             imdb.append(imdb_)

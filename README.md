@@ -12,7 +12,9 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 
 **(3)Rnet保持size=24不变，网络结构变为dw+sep，计算量约为原版1/3**
 
-**(4)Onet暂时没有训练，等陆续更新**
+**(4)Onet带landmark我没有训练成功过**
+
+**(5)Lnet是专门训练landmark的**
 
 # 训练建议
 
@@ -89,9 +91,9 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 	
 ## 带landmark
 
-需要下载[celeba](https://pan.baidu.com/s/1m3u3w_JaZn123keBaccLdw)，并解压到data/img_celeba
+下载[img_cut_celeba](https://pan.baidu.com/s/1XeGsYT_6VCP3n177oa3KGw)，解压到data/img_cut_celeba
 
-图片位置在data/img_celeba/xx.jpg
+图片位置在data/img_cut_celeba/xx.jpg
 
 **(17)双击O_gen_landmark.bat**
 
@@ -106,5 +108,59 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 **(19)双击L_train.bat**
 
 	训练Lnet
+	
+# 省硬盘的方式训练landmark(试验中)
 
- 
+选择以下三个数据集之一：(A)是原始celeba数据，(B)(C)是我加工过的，加载速度B>C>A
+
+(A)[img_celeba](https://pan.baidu.com/s/1f6lYVNVYR7h28Vh-1nIPnQ)，解压到data/img_celeba
+
+图片位置在data/img_celeba/xx.jpg
+
+以文本方式编辑 L_train_onlylandmark.bat, 设置参数--image_set img_celeba_all
+
+修改config.py中config.landmark_img_set='img_celeba'
+
+双击 L_train_onlylandmark.bat 运行
+
+(B)[img_align_celeba](https://pan.baidu.com/s/1rUBW8NasLZGtfQ33uA6Kdg)，解压到data/img_align_celeba
+
+图片位置在data/img_align_celeba/xx.jpg
+
+以文本方式编辑 L_train_onlylandmark.bat, 设置参数--image_set img_align_celeba_good
+
+修改config.py中config.landmark_img_set='img_align_celeba'
+
+双击 L_train_onlylandmark.bat 运行
+
+(C)[img_cut_celeba](https://pan.baidu.com/s/1XeGsYT_6VCP3n177oa3KGw)，解压到data/img_cut_celeba
+
+图片位置在data/img_cut_celeba/xx.jpg
+
+以文本方式编辑 L_train_onlylandmark.bat, 设置参数--image_set img_cut_celeba_all
+
+修改config.py中config.landmark_img_set='img_cut_celeba'
+
+双击 L_train_onlylandmark.bat 运行
+
+**备注：调整minibatch_onlylandmark.py里的参数得到的landmark精度不一样**
+
+# 训练106点landmark
+
+**暂不提供关键脚本minibatch_onlylandmark106.py**
+
+下载[Training_data106](https://pan.baidu.com/s/1SCdyksAWRSvhWCOJ4Syk1A)解压到data/Training_data106
+
+解压后目录结构应为
+
+	data/Training_data106/AFW
+	data/Training_data106/HELEN
+	data/Training_data106/IBUG
+	data/Training_data106/LFPW
+	
+将 data/Training_data106/landmark106.txt拷贝到data/mtcnn/imglists/landmark106.txt， 在config.py设置
+
+	config.landmark_img_set = 'Training_data106'
+	
+双击L_train_onlylandmark106.bat开始训练
+

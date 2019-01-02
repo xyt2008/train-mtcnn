@@ -103,9 +103,7 @@ class MtcnnDetector(object):
         # find nothing
         if t_index[0].size == 0:
             return np.array([])
-
         dx1, dy1, dx2, dy2 = [reg[0, i, t_index[0], t_index[1]] for i in range(4)]
-
         reg = np.array([dx1, dy1, dx2, dy2])
         score = map[t_index[0], t_index[1]]
         boundingbox = np.vstack([np.round((stride*t_index[1])/scale),
@@ -347,9 +345,10 @@ face candidates:%d, current batch_size:%d"%(num_boxes, batch_size)
 
         cropped_ims = np.zeros((num_boxes, 3, 24, 24), dtype=np.float32)
         for i in range(num_boxes):
-            tmp = np.zeros((tmph[i], tmpw[i], 3), dtype=np.uint8)
-            tmp[dy[i]:edy[i]+1, dx[i]:edx[i]+1, :] = im[y[i]:ey[i]+1, x[i]:ex[i]+1, :]
-            cropped_ims[i, :, :, :] = image_processing.transform(cv2.resize(tmp, (24, 24)))
+            if tmph[i] >= 2 and tmpw[i] >= 2 and edy[i]-dy[i]==ey[i]-y[i] and edx[i]-dx[i] == ex[i]-x[i]:
+                tmp = np.zeros((tmph[i], tmpw[i], 3), dtype=np.uint8)
+                tmp[dy[i]:edy[i]+1, dx[i]:edx[i]+1, :] = im[y[i]:ey[i]+1, x[i]:ex[i]+1, :]
+                cropped_ims[i, :, :, :] = image_processing.transform(cv2.resize(tmp, (24, 24)))
 
         cls_scores, reg = self.rnet_detector.predict(cropped_ims)
         cls_scores = cls_scores[:, 1].flatten()
@@ -404,9 +403,10 @@ face candidates:%d, current batch_size:%d"%(num_boxes, batch_size)
 
         cropped_ims = np.zeros((num_boxes, 3, 48, 48), dtype=np.float32)
         for i in range(num_boxes):
-            tmp = np.zeros((tmph[i], tmpw[i], 3), dtype=np.uint8)
-            tmp[dy[i]:edy[i]+1, dx[i]:edx[i]+1, :] = im[y[i]:ey[i]+1, x[i]:ex[i]+1, :]
-            cropped_ims[i, :, :, :] = image_processing.transform(cv2.resize(tmp, (48, 48)))
+            if tmph[i] >= 2 and tmpw[i] >= 2:
+                tmp = np.zeros((tmph[i], tmpw[i], 3), dtype=np.uint8)
+                tmp[dy[i]:edy[i]+1, dx[i]:edx[i]+1, :] = im[y[i]:ey[i]+1, x[i]:ex[i]+1, :]
+                cropped_ims[i, :, :, :] = image_processing.transform(cv2.resize(tmp, (48, 48)))
         cls_scores, reg = self.onet_detector.predict(cropped_ims)
 
         cls_scores = cls_scores[:, 1].flatten()

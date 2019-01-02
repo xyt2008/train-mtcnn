@@ -89,7 +89,10 @@ def gen_data_for_one_image(size, idx, img, pos_save_dir,neg_save_dir,part_save_d
         nx = npr.randint(0, width - cur_size)
         ny = npr.randint(0, height - cur_size)
         crop_box = np.array([nx, ny, nx + cur_size, ny + cur_size])
-        Iou = IoU(crop_box, boxes)
+        if boxes.shape[0] == 0:
+            Iou = 0
+        else:
+            Iou = IoU(crop_box, boxes)
 
         cropped_im = img[ny : ny + cur_size, nx : nx + cur_size, :]
         resized_im = cv2.resize(cropped_im, (size, size), interpolation=cv2.INTER_LINEAR)
@@ -97,22 +100,10 @@ def gen_data_for_one_image(size, idx, img, pos_save_dir,neg_save_dir,part_save_d
         if np.max(Iou) < 0.3:
             # Iou with all gts must below 0.3
             save_file = '%s/%d_%d.jpg'%(neg_save_dir,idx,neg_num)
-            cv2.imwrite(save_file, resized_im)
-            line = '%s/%d_%d 0'%(neg_save_dir,idx,neg_num)
-            neg_names.append(line)
-            neg_num += 1
-            brighter_im = resized_im*1.25
-            save_file = '%s/%d_%d.jpg'%(neg_save_dir,idx,neg_num)
-            cv2.imwrite(save_file, brighter_im)
-            line = '%s/%d_%d 0'%(neg_save_dir,idx,neg_num)
-            neg_names.append(line)
-            neg_num += 1
-            darker_im = resized_im*0.8
-            save_file = '%s/%d_%d.jpg'%(neg_save_dir,idx,neg_num)
-            cv2.imwrite(save_file, darker_im)
-            line = '%s/%d_%d 0'%(neg_save_dir,idx,neg_num)
-            neg_names.append(line)
-            neg_num += 1
+            if cv2.imwrite(save_file, resized_im):
+                line = '%s/%d_%d 0'%(neg_save_dir,idx,neg_num)
+                neg_names.append(line)
+                neg_num += 1
 
     box_num = boxes.shape[0]
     for bb in range(box_num):
@@ -128,7 +119,7 @@ def gen_data_for_one_image(size, idx, img, pos_save_dir,neg_save_dir,part_save_d
             continue
 
         # generate negative examples that have overlap with gt
-        for i in range(base_num*2):
+        for i in range(base_num*6):
             cur_size = npr.randint(size,  min(width, height) / 2)
             # delta_x and delta_y are offsets of (x1, y1)
             delta_x = npr.randint(max(-cur_size, -x1), w)
@@ -145,25 +136,13 @@ def gen_data_for_one_image(size, idx, img, pos_save_dir,neg_save_dir,part_save_d
 
             if np.max(Iou) < 0.3:
                 save_file = '%s/%d_%d.jpg'%(neg_save_dir,idx,neg_num)
-                cv2.imwrite(save_file, resized_im)
-                line = '%s/%d_%d 0'%(neg_save_dir,idx,neg_num)
-                neg_names.append(line)
-                neg_num += 1
-                brighter_im = resized_im*1.25
-                save_file = '%s/%d_%d.jpg'%(neg_save_dir,idx,neg_num)
-                cv2.imwrite(save_file, brighter_im)
-                line = '%s/%d_%d 0'%(neg_save_dir,idx,neg_num)
-                neg_names.append(line)
-                neg_num += 1
-                darker_im = resized_im*0.8
-                save_file = '%s/%d_%d.jpg'%(neg_save_dir,idx,neg_num)
-                cv2.imwrite(save_file, darker_im)
-                line = '%s/%d_%d 0'%(neg_save_dir,idx,neg_num)
-                neg_names.append(line)
-                neg_num += 1
+                if cv2.imwrite(save_file, resized_im):
+                    line = '%s/%d_%d 0'%(neg_save_dir,idx,neg_num)
+                    neg_names.append(line)
+                    neg_num += 1
 
         # generate positive examples and part faces
-        for i in range(base_num*8):
+        for i in range(base_num*25):
             cur_size = npr.randint(int(min(w, h) * 0.8), np.ceil(1.25 * max(w, h)))
 
             # delta here is the offset of box center
@@ -190,41 +169,18 @@ def gen_data_for_one_image(size, idx, img, pos_save_dir,neg_save_dir,part_save_d
             box_ = box.reshape(1, -1)
             if IoU(crop_box, box_) >= 0.65:
                 save_file = '%s/%d_%d.jpg'%(pos_save_dir,idx,pos_num)
-                cv2.imwrite(save_file, resized_im)
-                line = '%s/%d_%d 1 %.2f %.2f %.2f %.2f'%(pos_save_dir,idx,pos_num,offset_x1, offset_y1, offset_x2, offset_y2)
-                pos_names.append(line)
-                pos_num += 1
-                brighter_im = resized_im*1.25
-                save_file = '%s/%d_%d.jpg'%(pos_save_dir,idx,pos_num)
-                cv2.imwrite(save_file, brighter_im)
-                line = '%s/%d_%d 1 %.2f %.2f %.2f %.2f'%(pos_save_dir,idx,pos_num,offset_x1, offset_y1, offset_x2, offset_y2)
-                pos_names.append(line)
-                pos_num += 1
-                darker_im = resized_im*0.80
-                save_file = '%s/%d_%d.jpg'%(pos_save_dir,idx,pos_num)
-                cv2.imwrite(save_file, darker_im)
-                line = '%s/%d_%d 1 %.2f %.2f %.2f %.2f'%(pos_save_dir,idx,pos_num,offset_x1, offset_y1, offset_x2, offset_y2)
-                pos_names.append(line)
-                pos_num += 1
+                if cv2.imwrite(save_file, resized_im):
+                    line = '%s/%d_%d 1 %.2f %.2f %.2f %.2f'%(pos_save_dir,idx,pos_num,offset_x1, offset_y1, offset_x2, offset_y2)
+                    pos_names.append(line)
+                    pos_num += 1
+                
             elif IoU(crop_box, box_) >= 0.4:
                 if npr.randint(100) <= 40:
                     save_file = '%s/%d_%d.jpg'%(part_save_dir,idx,part_num)
-                    cv2.imwrite(save_file, resized_im)
-                    line = '%s/%d_%d -1 %.2f %.2f %.2f %.2f'%(part_save_dir,idx,part_num,offset_x1, offset_y1, offset_x2, offset_y2)
-                    part_names.append(line)
-                    part_num += 1
-                    brighter_im = resized_im*1.25
-                    save_file = '%s/%d_%d.jpg'%(part_save_dir,idx,part_num)
-                    cv2.imwrite(save_file, brighter_im)
-                    line = '%s/%d_%d -1 %.2f %.2f %.2f %.2f'%(part_save_dir,idx,part_num,offset_x1, offset_y1, offset_x2, offset_y2)
-                    part_names.append(line)
-                    part_num += 1
-                    darker_im = resized_im*0.80
-                    save_file = '%s/%d_%d.jpg'%(part_save_dir,idx,part_num)
-                    cv2.imwrite(save_file, darker_im)
-                    line = '%s/%d_%d -1 %.2f %.2f %.2f %.2f'%(part_save_dir,idx,part_num,offset_x1, offset_y1, offset_x2, offset_y2)
-                    part_names.append(line)
-                    part_num += 1
+                    if cv2.imwrite(save_file, resized_im):
+                        line = '%s/%d_%d -1 %.2f %.2f %.2f %.2f'%(part_save_dir,idx,part_num,offset_x1, offset_y1, offset_x2, offset_y2)
+                        part_names.append(line)
+                        part_num += 1
 
     return pos_names,neg_names,part_names
 

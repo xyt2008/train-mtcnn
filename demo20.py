@@ -5,6 +5,7 @@ import cv2
 import time
 from core.symbol import P_Net20, R_Net, O_Net
 from core.fcn_detector import FcnDetector
+from core.detector import Detector
 from tools.load_model import load_param
 from core.MtcnnDetector20 import MtcnnDetector
 
@@ -32,7 +33,7 @@ def test_net(prefix, epoch, batch_size, ctx,
     mtcnn_detector = MtcnnDetector(detectors=detectors, ctx=ctx, min_face_size=min_face_size,
                                    stride=4, threshold=thresh, slide_window=False)
 
-    img = cv2.imread('test01.jpg')
+    img = cv2.imread('4.jpg')
     t1 = time.time()
 
     boxes, boxes_c = mtcnn_detector.detect_pnet20(img)
@@ -57,7 +58,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Test mtcnn',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--prefix', dest='prefix', help='prefix of model name', nargs="+",
-                        default=['model/pnet20_hard', 'model/rnet', 'model/onet'], type=str)
+                        default='model/pnet20_hard,model/rnet,model/onet', type=str)
     parser.add_argument('--epoch', dest='epoch', help='epoch number of model to load',
                         default='16,16,16', type=str)
     parser.add_argument('--batch_size', dest='batch_size', help='list of batch size used in prediction', 

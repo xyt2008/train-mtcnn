@@ -24,16 +24,15 @@ class MyThread(threading.Thread):
         except Exception:
             return None
 
-def gen_landmark_minibatch_thread(size, start_idx, annotation_lines, landmark_lines, imdir, landmark_save_dir, base_num):
+def gen_landmark_minibatch_thread(size, start_idx, annotation_lines, imdir, landmark_save_dir, base_num):
     num_images = len(annotation_lines)
     landmark_names = list()
     for i in range(num_images):
         cur_annotation_line = annotation_lines[i].strip().split()
-        cur_landmark_line = landmark_lines[i].strip().split()
         im_path = cur_annotation_line[0]
-        bbox = map(float, cur_annotation_line[1:])
+        bbox = map(float, cur_annotation_line[1:5])
         boxes = np.array(bbox, dtype=np.float32).reshape(-1, 4)
-        landmark = map(float, cur_landmark_line[1:])
+        landmark = map(float, cur_annotation_line[5:])
         landmarks = np.array(landmark, dtype=np.float32).reshape(-1, 10)
         img = cv2.imread(os.path.join(imdir, im_path))
         cur_landmark_names = gen_landmark_for_one_image(size, start_idx+i, img, landmark_save_dir, boxes, landmarks, base_num)
@@ -43,7 +42,7 @@ def gen_landmark_minibatch_thread(size, start_idx, annotation_lines, landmark_li
     return landmark_names
 
 
-def gen_landmark_minibatch(size, start_idx, annotation_lines, landmark_lines, imdir, landmark_save_dir, base_num, thread_num = 4):
+def gen_landmark_minibatch(size, start_idx, annotation_lines, imdir, landmark_save_dir, base_num, thread_num = 4):
     num_images = len(annotation_lines)
     num_per_thread = math.ceil(float(num_images)/thread_num)
     threads = []
@@ -51,8 +50,7 @@ def gen_landmark_minibatch(size, start_idx, annotation_lines, landmark_lines, im
         cur_start_idx = int(num_per_thread*t)
         cur_end_idx = int(min(num_per_thread*(t+1),num_images))
         cur_annotation_lines = annotation_lines[cur_start_idx:cur_end_idx]
-        cur_landmark_lines = landmark_lines[cur_start_idx:cur_end_idx]
-        cur_thread = MyThread(gen_landmark_minibatch_thread,(size, start_idx+cur_start_idx, cur_annotation_lines, cur_landmark_lines, 
+        cur_thread = MyThread(gen_landmark_minibatch_thread,(size, start_idx+cur_start_idx, cur_annotation_lines,
                                                         imdir, landmark_save_dir, base_num))
         threads.append(cur_thread)
     for t in range(thread_num):
@@ -78,25 +76,44 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
     for bb in range(box_num):
         box = boxes[bb]
         landmark = landmarks[bb]
+        #dis1 = (landmark[0] - landmark[8])*(landmark[0] - landmark[8])+(landmark[1] - landmark[9])*(landmark[1] - landmark[9])
+        #dis2 = (landmark[2] - landmark[6])*(landmark[2] - landmark[6])+(landmark[3] - landmark[7])*(landmark[3] - landmark[7])
+        #dis = max(dis1,dis2)
+        #dis = dis**0.5
         x1, y1, w, h = box
+        cx = landmark[4]
+        cy = landmark[5]
+        bbox_size = int(0.25*(abs(x1-cx)+abs(x1+w-cx)+abs(y1-cy)+abs(y1+h-cy)))
+        x1 = int(cx - bbox_size*0.5)
+        y1 = int(cy - bbox_size*0.5)
+        w = bbox_size
+        h = bbox_size
  
         # ignore small faces
         # in case the ground truth boxes of small faces are not accurate
         if max(w, h) < 40 or x1 < 0 or y1 < 0:
             continue
 
-        angles = [0,-15,-30,15,30]
-        rot_num = len(angles)
-        for rr in range(rot_num):
-            #print(landmark)
-            rot_img, rot_landmark = image_processing.rotateWithLandmark(img, landmark, angles[rr],1)
-            rot_x1, rot_y1 = x1, y1 # as the angle is not large, bbox is almost the same
-            for i in range(base_num):
-                cur_size = npr.randint(int(min(w, h) * 0.8), np.ceil(1.25 * max(w, h)))
+        angles = [-25,-20,-15,-10,-5,0,5,10,15,20,25]
+        angle_num = len(angles)
+        for rr in range(angle_num):
+            cur_angle = angles[rr]
+            cur_sample_num = 0
+            try_num = 0
+            while cur_sample_num < base_num:
+                try_num += 1
+                if try_num > base_num*1000:
+                    break
+                rot_landmark = image_processing.rotateLandmark(landmark, cur_angle,1)
+                cur_size = int(npr.randint(5, 18)*0.1*bbox_size)
+                left_border_size = int(cur_size*0.05)
+                right_border_size = int(cur_size*0.05)
+                up_border_size = int(cur_size*0.15)
+                down_border_size = int(-cur_size*0.05)
 
                 # delta here is the offset of box center
-                delta_x = npr.randint(-w * 0.15, w * 0.15)
-                delta_y = npr.randint(-h * 0.15, h * 0.15)
+                delta_x = npr.randint(-int(w * 0.35), int(w * 0.35)+1)
+                delta_y = npr.randint(-int(h * 0.3), int(h * 0.4)+1)
 
                 nx1 = int(max(x1 + w / 2 + delta_x - cur_size / 2, 0))
                 ny1 = int(max(y1 + h / 2 + delta_y - cur_size / 2, 0))
@@ -105,8 +122,32 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
 
                 if nx2 > width or ny2 > height:
                     continue
-            
-
+                ignore = 0
+                max_x_landmark = -1
+                min_x_landmark = width+1
+                max_y_landmark = -1
+                min_y_landmark = height+1
+                for j in range(5):
+                    if rot_landmark[j*2] < nx1+left_border_size or rot_landmark[j*2] >= nx1 + cur_size-right_border_size:
+                        ignore = 1
+                    if rot_landmark[j*2+1] < ny1+up_border_size or rot_landmark[j*2+1] >= ny1 + cur_size-down_border_size:
+                        ignore = 1
+                    if max_x_landmark < rot_landmark[j*2]:
+                        max_x_landmark = rot_landmark[j*2]
+                    if min_x_landmark > rot_landmark[j*2]:
+                        min_x_landmark = rot_landmark[j*2]
+                    if max_y_landmark < rot_landmark[j*2+1]:
+                        max_y_landmark = rot_landmark[j*2+1]
+                    if min_y_landmark > rot_landmark[j*2+1]:
+                        min_y_landmark = rot_landmark[j*2+1]
+												
+                if ignore == 1:
+                    continue
+                landmark_x_dis = max_x_landmark - min_x_landmark
+                landmark_y_dis = max_y_landmark - min_y_landmark
+                tmp_dis = landmark_x_dis*landmark_x_dis + landmark_y_dis*landmark_y_dis
+                if tmp_dis < 0.20*cur_size*cur_size:
+                    continue
                 offset_x1 = (rot_landmark[0] - nx1 + 0.5) / float(cur_size)
                 offset_y1 = (rot_landmark[1] - ny1 + 0.5) / float(cur_size)
                 offset_x2 = (rot_landmark[2] - nx1 + 0.5) / float(cur_size)
@@ -118,38 +159,23 @@ def gen_landmark_for_one_image(size, idx, img, landmark_save_dir,boxes, landmark
                 offset_x5 = (rot_landmark[8] - nx1 + 0.5) / float(cur_size)
                 offset_y5 = (rot_landmark[9] - ny1 + 0.5) / float(cur_size)
 
+                rot_img,_ = image_processing.rotateWithLandmark(img,landmark, cur_angle,1)
                 cropped_im = rot_img[ny1 : ny2, nx1 : nx2, :]
                 resized_im = cv2.resize(cropped_im, (size, size), interpolation=cv2.INTER_LINEAR)
                 save_file = '%s/%d_%d.jpg'%(landmark_save_dir,idx,landmark_num)
-                cv2.imwrite(save_file, resized_im)
-                line = '%s/%d_%d'%(landmark_save_dir,idx,landmark_num) + ' -2 %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f'%(
-                                         offset_x1, offset_x2, offset_x3, offset_x4, offset_x5, 
-                                         offset_y1, offset_y2, offset_y3, offset_y4, offset_y5)
-                landmark_names.append(line)
-                landmark_num += 1
-                brighter_im = resized_im*1.25
-                save_file = '%s/%d_%d.jpg'%(landmark_save_dir,idx,landmark_num)
-                cv2.imwrite(save_file, brighter_im)
-                line = '%s/%d_%d'%(landmark_save_dir,idx,landmark_num) + ' -2 %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f'%(
-                                         offset_x1, offset_x2, offset_x3, offset_x4, offset_x5, 
-                                         offset_y1, offset_y2, offset_y3, offset_y4, offset_y5)
-                landmark_names.append(line)
-                landmark_num += 1
-                darker_im = resized_im*0.8
-                save_file = '%s/%d_%d.jpg'%(landmark_save_dir,idx,landmark_num)
-                cv2.imwrite(save_file, darker_im)
-                line = '%s/%d_%d'%(landmark_save_dir,idx,landmark_num) + ' -2 %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f'%(
-                                         offset_x1, offset_x2, offset_x3, offset_x4, offset_x5, 
-                                         offset_y1, offset_y2, offset_y3, offset_y4, offset_y5)
-                landmark_names.append(line)
-                landmark_num += 1
+                if cv2.imwrite(save_file, resized_im):
+                    line = '%s/%d_%d'%(landmark_save_dir,idx,landmark_num) + ' -2 %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f'%(
+                                             offset_x1, offset_x2, offset_x3, offset_x4, offset_x5, 
+                                             offset_y1, offset_y2, offset_y3, offset_y4, offset_y5)
+                    landmark_names.append(line)
+                    landmark_num += 1
+                    cur_sample_num += 1
 				
     return landmark_names
 
 def gen_landmark(size=20, base_num = 1, thread_num = 4):
-    anno_file = "%s/prepare_data/celeba_annotations/list_bbox_celeba.txt"%config.root
-    landmark_file = "%s/prepare_data/celeba_annotations/list_landmarks_celeba.txt"%config.root
-    imdir = "%s/data/img_celeba"%config.root
+    anno_file = "%s/data/mtcnn/imglists/img_cut_celeba_all.txt"%config.root
+    imdir = "%s/data/img_align_celeba"%config.root
     landmark_save_dir = "%s/prepare_data/%d/landmark"%(config.root,size)
     
     save_dir = "%s/prepare_data/%d"%(config.root,size)
@@ -161,21 +187,16 @@ def gen_landmark(size=20, base_num = 1, thread_num = 4):
 
     with open(anno_file, 'r') as f:
         annotation_lines = f.readlines()
-    with open(landmark_file, 'r') as f:
-        landmark_lines = f.readlines()
-
-    num = len(annotation_lines)-2
+    
+    num = len(annotation_lines)
     print "%d pics in total" % num
-    annotation_lines = annotation_lines[2:]
-    landmark_lines = landmark_lines[2:]
     batch_size = thread_num*10
     landmark_num = 0
     start_idx = 0
     while start_idx < num:
         end_idx = min(start_idx+batch_size,num)
         cur_annotation_lines = annotation_lines[start_idx:end_idx]
-        cur_landmark_lines = landmark_lines[start_idx:end_idx]
-        landmark_names = gen_landmark_minibatch(size, start_idx, cur_annotation_lines, cur_landmark_lines, 
+        landmark_names = gen_landmark_minibatch(size, start_idx, cur_annotation_lines,
                                             imdir, landmark_save_dir, base_num, thread_num)
         cur_landmark_num = len(landmark_names)
         for i in range(cur_landmark_num):
