@@ -1,0 +1,1 @@
+python demo20.py --epoch 13,20,1 --imgfile 4.jpg
