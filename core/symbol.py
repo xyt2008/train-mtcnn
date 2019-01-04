@@ -93,13 +93,11 @@ def R_Net(mode='train'):
     bn5_1 = mx.sym.BatchNorm(data=conv5_1, name='bn5_1', fix_gamma=False,momentum=0.9)
     conv5_2 = mx.symbol.FullyConnected(data=prelu5_dw, num_hidden=4, name="conv5_2")
     bn5_2 = mx.sym.BatchNorm(data=conv5_2, name='bn5_2', fix_gamma=False,momentum=0.9)
-
+    cls_prob = mx.symbol.SoftmaxOutput(data=bn5_1, label=label, use_ignore=True, name="cls_prob")
     if mode == 'test':
-        cls_prob = mx.symbol.SoftmaxActivation(data=bn5_1, mode="channel", name="cls_prob")
         bbox_pred = bn5_2
         group = mx.symbol.Group([cls_prob, bbox_pred])
     else:
-        cls_prob = mx.symbol.SoftmaxOutput(data=bn5_1, label=label, use_ignore=True, name="cls_prob")
         bbox_pred = mx.symbol.LinearRegressionOutput(data=bn5_2, label=bbox_target,
                                                      grad_scale=1, name="bbox_pred")
 
