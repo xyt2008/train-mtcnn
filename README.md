@@ -109,9 +109,9 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 
 	训练Lnet
 	
-# 省硬盘的方式训练landmark(试验中)
+# 省硬盘的方式训练landmark
 
-选择以下三个数据集之一：(A)是原始celeba数据，(B)(C)是我加工过的，加载速度B>C>A
+选择以下三个数据集之一：(A)是原始celeba数据，(B)(C)是我加工过的，加载速度B>C>A，（**我推荐用C，理论上用C应该和用A训练出来的结果一样**）
 
 (A)[img_celeba](https://pan.baidu.com/s/1f6lYVNVYR7h28Vh-1nIPnQ)，解压到data/img_celeba
 
