@@ -198,9 +198,9 @@ def P_Net20_v4(mode='train'):
     conv6_dw = mx.symbol.Convolution(data=prelu5, kernel=(3, 3), num_filter=64, num_group=64, name="conv6_dw")#3/1
     prelu6_dw = mx.symbol.LeakyReLU(data=conv6_dw, act_type="prelu", name="prelu6_dw")
 
-    conv4_1 = mx.symbol.Convolution(data=prelu5_dw, kernel=(1, 1), num_filter=2, name="conv4_1")
+    conv4_1 = mx.symbol.Convolution(data=prelu6_dw, kernel=(1, 1), num_filter=2, name="conv4_1")
     bn4_1 = mx.sym.BatchNorm(data=conv4_1, name='bn4_1', fix_gamma=False,momentum=0.9)
-    conv4_2 = mx.symbol.Convolution(data=prelu5_dw, kernel=(1, 1), num_filter=4, name="conv4_2")
+    conv4_2 = mx.symbol.Convolution(data=prelu6_dw, kernel=(1, 1), num_filter=4, name="conv4_2")
     bn4_2 = mx.sym.BatchNorm(data=conv4_2, name='bn4_2', fix_gamma=False,momentum=0.9)
     if mode == 'test':
         cls_prob = mx.symbol.SoftmaxActivation(data=bn4_1, mode="channel", name="cls_prob")
