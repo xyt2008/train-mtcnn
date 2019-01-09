@@ -5,6 +5,7 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 **六种Pnet20**
 
 | 模型名称 | 输入尺寸 | cell_size | stride | 计算量（不计bbox）|
+| -------- | ------   | --------- | -------| ------------      |
 | Pnet20_v1| 320x240  | 20        |  4     | 11.6 M            |
 | Pnet20_v2| 320x240  | 20        |  4     | 18.4 M            |
 | Pnet20_v3| 320x240  | 20        |  4     | 28.1 M            |
