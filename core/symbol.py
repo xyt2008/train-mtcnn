@@ -502,11 +502,12 @@ def O_Net(mode="train", with_landmark = False):
                                 type_label=type_label, op_type='negativemining_landmark', name="negative_mining")
             group = mx.symbol.Group([out])
     else:
-        conv1 = mx.symbol.Convolution(data=data, kernel=(3, 3),num_filter=16, name="conv1") #48/46
+        conv1 = mx.symbol.Convolution(data=data, kernel=(2, 2),num_filter=32, name="conv1") #48/47
         prelu1 = mx.symbol.LeakyReLU(data=conv1, act_type="prelu", name="prelu1")
 	
-        pool1 = mx.symbol.Pooling(data=prelu1, pool_type="max", pooling_convention="full", kernel=(3, 3), stride=(2, 2), name="pool1") #46/23
-        conv2_sep = mx.symbol.Convolution(data=pool1, kernel=(1, 1), num_filter=32, name="conv2_sep")
+        conv2_dw = mx.symbol.Convolution(data=prelu1, kernel=(3, 3), stride=(2, 2), num_filter=32, num_group=32, name="conv2_dw") #47/23
+        prelu2_dw = mx.symbol.LeakyReLU(data=conv2_dw, act_type="prelu", name="prelu2_dw")
+        conv2_sep = mx.symbol.Convolution(data=prelu2_dw, kernel=(1, 1), num_filter=32, name="conv2_sep")
         prelu2 = mx.symbol.LeakyReLU(data=conv2_sep, act_type="prelu", name="prelu2")
 
         conv3_dw = mx.symbol.Convolution(data=prelu2, kernel=(3, 3), stride=(2, 2), num_filter=32, num_group=32, name="conv3_dw") #23/11
