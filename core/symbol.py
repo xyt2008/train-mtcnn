@@ -178,7 +178,7 @@ def P_Net20_v4(mode='train'):
     conv1 = mx.symbol.Convolution(data=data, kernel=(2, 2), num_filter=16, name="conv1")#20/19
     prelu1 = mx.symbol.LeakyReLU(data=conv1, act_type="prelu", name="prelu1")
 
-    conv2_dw = mx.symbol.Convolution(data=prelu2, kernel=(3, 3), stride=(2,2), num_filter=16, num_group=16, name="conv2_dw")#19/9
+    conv2_dw = mx.symbol.Convolution(data=prelu1, kernel=(3, 3), stride=(2,2), num_filter=16, num_group=16, name="conv2_dw")#19/9
     prelu2_dw = mx.symbol.LeakyReLU(data=conv2_dw, act_type="prelu", name="prelu2_dw")
     conv2_sep = mx.symbol.Convolution(data=prelu2_dw, kernel=(1, 1), num_filter=32, name="conv2_sep")
     prelu2 = mx.symbol.LeakyReLU(data=conv2_sep, act_type="prelu", name="prelu2")
