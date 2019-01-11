@@ -86,8 +86,10 @@ def rotateWithLandmark(image, landmark, angle, scale):
     else:
         w = image.shape[1]
         h = image.shape[0]
-        cx = landmark[4]
-        cy = landmark[5]
+        #cx = landmark[4]
+        #cy = landmark[5]
+        cx = 0.25*(landmark[0]+landmark[2]+landmark[6]+landmark[8])
+        cy = 0.25*(landmark[1]+landmark[3]+landmark[7]+landmark[9])
         #rotate matrix
         M = cv2.getRotationMatrix2D((cx,cy), angle, scale)
     
@@ -133,8 +135,10 @@ def rotateLandmark(landmark, angle, scale):
         landmark1 = landmark.copy()
         return landmark1
     else:
-        cx = landmark[4]
-        cy = landmark[5]
+        #cx = landmark[4]
+        #cy = landmark[5]
+        cx = 0.25*(landmark[0]+landmark[2]+landmark[6]+landmark[8])
+        cy = 0.25*(landmark[1]+landmark[3]+landmark[7]+landmark[9])
         #rotate matrix
         M = cv2.getRotationMatrix2D((cx,cy), angle, scale)
     
