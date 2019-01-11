@@ -76,14 +76,12 @@ def augment_for_one_image(annotation_line, size):
     height = img.shape[0]
     bbox = np.array(annotation[1:5],dtype=np.float32)
     landmark = np.array(annotation[5:15],dtype=np.float32)
-    #print bbox,landmark
-    #dis1 = (landmark[0] - landmark[8])*(landmark[0] - landmark[8])+(landmark[1] - landmark[9])*(landmark[1] - landmark[9])
-    #dis2 = (landmark[2] - landmark[6])*(landmark[2] - landmark[6])+(landmark[3] - landmark[7])*(landmark[3] - landmark[7])
-    #dis = max(dis1,dis2)
-    #dis = dis**0.5
+    
     x1, y1, w, h = bbox
-    cx = landmark[4]
-    cy = landmark[5]
+    #cx = landmark[4]
+    #cy = landmark[5]
+    cx = 0.25*(landmark[0]+landmark[2]+landmark[6]+landmark[8])
+    cy = 0.25*(landmark[1]+landmark[3]+landmark[7]+landmark[9])
     bbox_size = int(0.25*(abs(x1-cx)+abs(x1+w-cx)+abs(y1-cy)+abs(y1+h-cy)))
     x1 = int(cx - bbox_size*0.5)
     y1 = int(cy - bbox_size*0.5)
@@ -102,6 +100,8 @@ def augment_for_one_image(annotation_line, size):
             force_accept = 1
             break
         rot_landmark = image_processing.rotateLandmark(landmark, cur_angle,1)
+        rot_addition_x = 0.5*(rot_landmark[0]+rot_landmark[2]+rot_landmark[6]+rot_landmark[8]) - rot_landmark[4]
+        rot_addition_y = 0.5*(rot_landmark[1]+rot_landmark[3]+rot_landmark[7]+rot_landmark[9]) - rot_landmark[5]
         cur_size = int(npr.randint(5, 18)*0.1*bbox_size)
         up_border_size = int(cur_size*0.15)
         down_border_size = 0
@@ -137,7 +137,18 @@ def augment_for_one_image(annotation_line, size):
                 max_y_landmark = rot_landmark[j*2+1]
             if min_y_landmark > rot_landmark[j*2+1]:
                 min_y_landmark = rot_landmark[j*2+1]
-												
+        if rot_addition_x < nx1+left_border_size or rot_addition_x >= nx1 + cur_size-right_border_size:
+            ignore = 1
+        if rot_addition_y < ny1+up_border_size or rot_addition_y >= ny1 + cur_size-down_border_size:
+            ignore = 1
+        if max_x_landmark < rot_addition_x:
+            max_x_landmark = rot_addition_x
+        if min_x_landmark > rot_addition_x:
+            min_x_landmark = rot_addition_x
+        if max_y_landmark < rot_addition_y:
+            max_y_landmark = rot_addition_y
+        if min_y_landmark > rot_addition_y:
+            min_y_landmark = rot_addition_y
         if ignore == 1:
             continue
         landmark_x_dis = max_x_landmark - min_x_landmark
