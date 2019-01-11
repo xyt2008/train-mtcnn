@@ -103,14 +103,14 @@ def augment_for_one_image(annotation_line, size):
         rot_addition_x = 0.5*(rot_landmark[0]+rot_landmark[2]+rot_landmark[6]+rot_landmark[8]) - rot_landmark[4]
         rot_addition_y = 0.5*(rot_landmark[1]+rot_landmark[3]+rot_landmark[7]+rot_landmark[9]) - rot_landmark[5]
         cur_size = int(npr.randint(5, 26)*0.1*bbox_size)
-        up_border_size = int(cur_size*0.15)
-        down_border_size = 0
-        left_border_size = int(cur_size*0.05)
-        right_border_size = int(cur_size*0.05)
+        up_border_size = int(cur_size*0.05)
+        down_border_size = int(cur_size*-0.05)
+        left_border_size = int(cur_size*-0.05)
+        right_border_size = int(cur_size*-0.05)
 
         # delta here is the offset of box center
-        delta_x = npr.randint(-int(w * 0.35), int(w * 0.35)+1)
-        delta_y = npr.randint(-int(h * 0.3), int(h * 0.4)+1)
+        delta_x = npr.randint(-int(w * 0.4), int(w * 0.4)+1)
+        delta_y = npr.randint(-int(h * 0.4), int(h * 0.4)+1)
 
         nx1 = int(max(x1 + w / 2 + delta_x - cur_size / 2, 0))
         ny1 = int(max(y1 + h / 2 + delta_y - cur_size / 2, 0))
