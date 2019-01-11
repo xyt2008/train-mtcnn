@@ -6,7 +6,8 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 
 | 模型名称     | 输入尺寸     | 计算量（不计bbox）| 训练时精度      | pooling个数 |  备注                |
 | --------     | ------       | ------------      | -----------     | ----------- | -------------------- |
-| Pnet20_v1    | 320x240      | 11.6 M            | 0.900-0.908     |     0       | 对标libfacedetection |
+| Pnet20_v0    | 320x240      | 11.6 M            | 0.900-0.908     |     0       | 对标libfacedetection |
+| Pnet20_v1    | 320x240      | 14.6 M            | 待测            |     0       |                      |
 | Pnet20_v2    | 320x240      | 18.4 M            | 0.928-0.933     |     0       | 对标原版pnet         |
 | ~~Pnet20_v3~~| ~~320x240~~  | ~~28.1 M~~        | ~~0.930-0.935~~ |     ~~1~~   | ~~性价比不如v2~~     |
 | Pnet20_v4    | 320x240      | 46.9 M            | 0.945-0.950     |     0       |                      |
