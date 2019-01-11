@@ -14,6 +14,7 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 | [~~Pnet20_v5~~]()| ~~320x240~~  | ~~74.1 M~~        | ~~0.945-0.950~~ |     ~~1~~   | ~~不建议使用~~       |
 | [Pnet20_v6]()    | 320x240      | 79.9 M            | 0.952-0.957     |     0       |                      |
 | [Pnet20_v7]()    | 320x240      | 91.1 M            | 0.952-0.958     |     2       |                      |
+| [Pnet20_v8]()    | 320x240      | 109.4 M           | 待测            |     0       |                      |
 
 # 基本说明
 
