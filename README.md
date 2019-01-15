@@ -161,7 +161,6 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 
 # 训练106点landmark
 
-**暂不提供关键脚本minibatch_onlylandmark106.py**
 
 下载[Training_data106](https://pan.baidu.com/s/1SCdyksAWRSvhWCOJ4Syk1A)解压到data/Training_data106
 
