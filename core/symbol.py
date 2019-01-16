@@ -526,8 +526,7 @@ def R_Net(mode='train'):
     prelu4 = mx.symbol.LeakyReLU(data=conv4_sep, act_type="prelu", name="prelu4")
 
     conv5_dw = mx.symbol.Convolution(data=prelu4, kernel=(3, 3), num_filter=128, num_group=128, name="conv5_dw")#3/1
-    bn5_dw = mx.sym.BatchNorm(data=conv5_dw, name='bn5_dw', fix_gamma=False,momentum=0.9)
-    prelu5_dw = mx.symbol.LeakyReLU(data=bn5_dw, act_type="prelu", name="prelu5_dw")
+    prelu5_dw = mx.symbol.LeakyReLU(data=conv5_dw, act_type="prelu", name="prelu5_dw")
 	
     conv5_1 = mx.symbol.FullyConnected(data=prelu5_dw, num_hidden=2, name="conv5_1")
     bn5_1 = mx.sym.BatchNorm(data=conv5_1, name='bn5_1', fix_gamma=False,momentum=0.9)
@@ -586,8 +585,7 @@ def R_Net_v2(mode='train'):
     prelu6 = mx.symbol.LeakyReLU(data=conv6_sep, act_type="prelu", name="prelu6")
 
     conv7_dw = mx.symbol.Convolution(data=prelu6, kernel=(3, 3), num_filter=128, num_group=128, name="conv7_dw")#3/1
-    bn7_dw = mx.sym.BatchNorm(data=conv7_dw, name='bn7_dw', fix_gamma=False,momentum=0.9)
-    prelu7_dw = mx.symbol.LeakyReLU(data=bn7_dw, act_type="prelu", name="prelu7_dw")
+    prelu7_dw = mx.symbol.LeakyReLU(data=conv7_dw, act_type="prelu", name="prelu7_dw")
 	
     conv5_1 = mx.symbol.FullyConnected(data=prelu7_dw, num_hidden=2, name="conv5_1")
     bn5_1 = mx.sym.BatchNorm(data=conv5_1, name='bn5_1', fix_gamma=False,momentum=0.9)
