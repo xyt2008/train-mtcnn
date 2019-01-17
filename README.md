@@ -2,6 +2,28 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 
 训练环境windows 7/10, 其他环境未测试
 
+**六种Pnet20（原版Pnet等价计算量为43.7M）**
+
+| 模型名称                                                        | 输入尺寸     | 计算量（不计bbox）| 训练时精度      | pooling个数 |  备注                |
+| --------                                                        | ------       | ------------      | -----------     | ----------- | -------------------- |
+| [Pnet20_v0]()    | 320x240      | 11.6 M            | 0.900-0.908     |     0       | 对标libfacedetection |
+| [Pnet20_v1]()    | 320x240      | 14.6 M            | 0.915-0.920     |     0       |                      |
+| [Pnet20_v2]()    | 320x240      | 18.4 M            | 0.928-0.933     |     0       | 对标原版pnet         |
+| [~~Pnet20_v3~~]()| ~~320x240~~  | ~~28.1 M~~        | ~~0.930-0.935~~ |     ~~1~~   | ~~性价比不如v2~~     |
+| [Pnet20_v4]()    | 320x240      | 46.9 M            | 0.945-0.950     |     0       |                      |
+| [~~Pnet20_v5~~]()| ~~320x240~~  | ~~74.1 M~~        | ~~0.945-0.950~~ |     ~~1~~   | ~~不建议使用~~       |
+| [Pnet20_v6]()    | 320x240      | 79.9 M            | 0.952-0.957     |     0       |                      |
+| [~~Pnet20_v7~~]()| ~~320x240~~  | ~~91.1 M~~        | ~~0.952-0.958~~ |     ~~2~~   | ~~性价比不如v6~~     |
+| [Pnet20_v8]()    | 320x240      | 109.4 M           | 0.954-0.958     |     0       |                      |
+
+
+**两种Rnet（原版Rnet计算量为1.5M）**
+
+| 模型名称                                                        | 输入尺寸     | 计算量（不计bbox）| 训练时精度      | pooling个数 |  备注                |
+| --------                                                        | ------       | ------------      | -----------     | ----------- | -------------------- |
+| [Rnet_v1]()    | 24x24      | 0.5 M            | 待测     |     0       | 对标原版Rnet         |
+| [Rnet_v2]()    | 24x24      | 1.4 M            | 待测     |     0       |                      |
+
 # 基本说明
 
 **(1)请使用[ZQCNN_MTCNN](https://github.com/zuoqing1988/ZQCNN)来进行forward**
@@ -109,9 +131,9 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 
 	训练Lnet
 	
-# 省硬盘的方式训练landmark(试验中)
+# 省硬盘的方式训练landmark
 
-选择以下三个数据集之一：(A)是原始celeba数据，(B)(C)是我加工过的，加载速度B>C>A
+选择以下三个数据集之一：(A)是原始celeba数据，(B)(C)是我加工过的，加载速度B>C>A，（**我推荐用C，理论上用C应该和用A训练出来的结果一样**）
 
 (A)[img_celeba](https://pan.baidu.com/s/1f6lYVNVYR7h28Vh-1nIPnQ)，解压到data/img_celeba
 
@@ -147,7 +169,6 @@ train mtcnn: a modified version by Zuo Qing from https://github.com/Seanlinx/mtc
 
 # 训练106点landmark
 
-**暂不提供关键脚本minibatch_onlylandmark106.py**
 
 下载[Training_data106](https://pan.baidu.com/s/1SCdyksAWRSvhWCOJ4Syk1A)解压到data/Training_data106
 
